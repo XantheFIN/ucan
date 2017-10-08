@@ -7,7 +7,7 @@ Universal API for [Controller Area Network (CAN bus or CAN)](https://en.wikipedi
 
 While [SocketCAN ](https://en.wikipedia.org/wiki/SocketCAN) is providing a great generic interface for using CAN adapters on Linux, no such implementation exists for Windows or macOS. This complicates the cross-platform development of CAN-based applications.
 
-It is therefore the objective of this open-source project to provide a universal CAN driver (uCAN) that covers all three major operating systems and offers a simple and clean DLL based API.
+It is therefore the objective of this open-source project to provide an universal CAN API (uCAN) that covers all three major operating systems and offers a simple and clean DLL based API.
 
 ## Supported OS' and Hardware
 
