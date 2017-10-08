@@ -13,7 +13,7 @@ It is therefore the objective of this open-source project to provide a universal
 
 uCAN currently supports the following hardware:
 * Windows:
-  * SL CAN compatible devices (such as [Lawicel](http://www.can232.com) and [Tiny-CAN](http://www.mhs-elektronik.de/)
+  * SL CAN compatible devices (such as [Lawicel](http://www.can232.com) and [Tiny-CAN](http://www.mhs-elektronik.de/))
 * macOS:
   * SL CAN
 * Linux:
@@ -22,7 +22,7 @@ uCAN currently supports the following hardware:
 
 ## Software Dependencies
 
-The portability of uCAN is based on the [Boost C++ Libraries](http://www.boost.org/). The build of the library is managed by the [SCons](http://scons.org/) software construction tools (in conjunction with [Python](https://www.python.org/)). Please review the [construction.txt] file for OS specific details.
+The portability of uCAN is based on the [Boost C++ Libraries](http://www.boost.org/). The build of the library is managed by the [SCons](http://scons.org/) software construction tools (in conjunction with [Python](https://www.python.org/)). Please review the [Construction.txt](Construction.txt) file for OS specific details.
 
 ## IDE
 
