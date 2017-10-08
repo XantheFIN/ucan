@@ -13,12 +13,12 @@ It is therefore the objective of this open-source project to provide a universal
 
 uCAN currently supports the following hardware:
 * Windows:
- * SL CAN compatible devices (such as [Lawicel](http://www.can232.com) and [Tiny-CAN](http://www.mhs-elektronik.de/)
+  * SL CAN compatible devices (such as [Lawicel](http://www.can232.com) and [Tiny-CAN](http://www.mhs-elektronik.de/)
 * macOS:
- * SL CAN
+  * SL CAN
 * Linux:
- * Socket CAN
- * SL CAN
+  * Socket CAN
+  * SL CAN
 
 ## Software Dependencies
 
@@ -30,10 +30,10 @@ While uCAN can be built from the command-line, it is recommended that the [Eclip
 
 ## License
 
-uCAN is released under the LGPL license. Please see the [LICENSE.txt] file for more information.
+uCAN is released under the LGPL license. Please see the [LICENSE.txt](LICENSE.txt) file for more information.
 
 ## Contributing
 
 As a real software engineer will quickly discover, this code has been primarily written by a non computer scientist. Consequently, suggestions for improvements and general refactoring are more than welcome!
 
-We naturally also very much appreciate your bug reports, bug-fixes and feature contributions. Credit will always be given in the [Contributors.txt] file.
+We naturally also very much appreciate your bug reports, bug-fixes and feature contributions. Credit will always be given in the [Contributors.txt](Contributors.txt) file.
