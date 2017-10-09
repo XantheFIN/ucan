@@ -1,0 +1,65 @@
+"""
+ * This file is part of a CODESKIN library that is being made available
+ * as open source under the GNU Lesser General Public License.
+ *
+ * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import sys
+import platform
+
+Import('env')
+
+sfiles = [
+	'SocketCanAdapter.cpp'
+	]
+
+# static library
+lib_env = env.Clone();	
+if ((os.name == 'nt') and (platform.system() == 'Windows' )):
+	oobjs = []
+	for sf in sfiles:
+		o = lib_env.Object('s_'+sf.split('.cpp')[0], sf);
+		oobjs.append(o);
+	socketcan = lib_env.Library(lib_env.LibName('socketcan_can'), oobjs);	
+else:
+	socketcan = lib_env.Library(lib_env.LibName('socketcan_can'), sfiles);		
+
+# dynamic library
+dll_env = env.Clone();	
+if ((os.name == 'posix') and (platform.system() == 'Linux' )): 
+	dll_env.Append(LIBS = ['boost_system','boost_thread','boost_chrono','dl','pthread'])
+	dll_env.Append(LINKFLAGS= " -Wl,-z,defs -Wl,--no-undefined ") 
+else:
+	dll_env.Append(LIBS = [])
+
+dll_env.Prepend(LIBS = [dll_env.LibName('ucan_utils'),dll_env.LibName('can')]);
+dll_env.Prepend(LIBPATH = ['../utils', '../can']);
+
+socketcan_dll = dll_env.SharedLibrary(dll_env.SharedLibName('SocketCan'),[
+	'SocketCanAdapterFactory.cpp',
+	sfiles
+	]);
+		
+if int(dll_env['RELEASE']) == 1:
+	for dir in dll_env['INSTALL_DIRS']:
+		Default(dll_env.Install('%s/dll' % dir, socketcan_dll))
+	
+objs = []
+objs.append(socketcan)
+
+Return('objs');

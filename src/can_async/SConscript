@@ -1,0 +1,50 @@
+"""
+ * This file is part of a CODESKIN library that is being made available
+ * as open source under the GNU Lesser General Public License.
+ *
+ * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import sys
+import platform
+
+Import('env')
+
+lib_env = env.Clone();
+
+if ((os.name == 'nt') and (platform.system() == 'Windows' )):
+	lib_env['PDB'] = 'net.pdb'
+
+elif((os.name == 'posix') and (platform.system() == 'Linux' )):
+	lib_env.Append(CXXFLAGS = ' -fPIC ') 
+ 
+can_async = lib_env.Library(lib_env.LibName('can_async'),[
+	'CanAsyncWrapper.cpp'
+	]);
+
+if int(lib_env['RELEASE']) == 1:
+	for dir in lib_env['INSTALL_DIRS']:
+		Default(lib_env.Install('%s/lib' % dir, can_async))
+		Default(lib_env.Install('%s/include' % dir, ['CanAsyncWrapper.h','CanAsyncService.hpp','CanAsyncIoObject.hpp']))
+
+test = SConscript(['test/SConscript']);
+
+objs = []
+objs.append(can_async)
+objs.append(test)
+
+Return('objs');

@@ -1,0 +1,69 @@
+"""
+ * This file is part of a CODESKIN library that is being made available
+ * as open source under the GNU Lesser General Public License.
+ *
+ * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import sys
+import platform
+
+Import('env')
+
+test_env = env.Clone();
+
+if ((os.name == 'posix') and (platform.system() == 'Linux' )): 
+	test_env.Append(LIBS = ['boost_system','boost_thread','boost_chrono','boost_filesystem'])
+	test_env.Append(LINKFLAGS= " -Wl,-rpath=\\$$ORIGIN") 
+	test_env.Append(LIBS=['dl']);
+	
+elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
+	test_env.Append(LIBS = ['boost_system','boost_thread-mt','boost_chrono'])
+	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,build/can_async/test") 
+
+test_env.Prepend(LIBS = [test_env.LibName('can_async'),test_env.LibName('can'),test_env.LibName('ucan_utils')]);
+test_env.Prepend(LIBPATH = ['../','../../can','../../utils']);	
+
+test = test_env.Program('TestAsyncCan',['main.cpp', 'CanAsyncTest.cpp']);
+
+slcan_dll = test_env.Command(test_env.SharedLibNameExt('SLCan'), "../../slcan_can/"+test_env.SharedLibNameExt('SLCan'), Copy("$TARGET", "$SOURCE"))
+
+if((os.name == 'nt') and (platform.system() == 'Windows' )):
+	if int(test_env['ARCH']) == 32:
+		test_env.Requires(test, [
+			slcan_dll,
+		])	
+	else:
+		test_env.Requires(test, [
+			slcan_dll,
+		])			
+			
+elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
+	test_env.Requires(test, [
+		slcan_dll
+	])	
+			
+elif((os.name == 'posix') and (platform.system() == 'Linux' )):
+	socketcan_dll = test_env.Command(test_env.SharedLibNameExt('SocketCan'), "../../socketcan_can/"+test_env.SharedLibNameExt('SocketCan'), Copy("$TARGET", "$SOURCE"))
+	test_env.Requires(test, [
+		slcan_dll,
+		socketcan_dll
+	])			
+
+objs = []
+Return('objs')	
+

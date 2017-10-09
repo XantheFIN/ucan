@@ -1,0 +1,60 @@
+"""
+ * This file is part of a CODESKIN library that is being made available
+ * as open source under the GNU Lesser General Public License.
+ *
+ * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import sys
+import platform
+
+Import('env')
+
+dll_env = env.Clone();
+					
+if ((os.name == 'posix') and (platform.system() == 'Linux' )):  
+	dll_env.Append(LIBS=['dl']);
+	dll_env.Append(LINKFLAGS= " -Wl,-z,defs -Wl,--no-undefined ") 
+		
+elif((os.name == 'nt') and (platform.system() == 'Windows' )):
+	dll_env.Append(LIBS=['Advapi32.lib']);
+	dll_env['PDB'] = dll_env.SharedLibName('Can')+'.pdb'
+	
+elif((os.name == 'posix') and (platform.system() == 'Darwin' )):	
+	dll_env.Append(LINKFLAGS= ' -install_name @rpath/'+dll_env.SharedLibNameExt('Can')+' ') 
+	
+dll_env.Append(LIBPATH = ['../utils','../can'])	
+dll_env.Append(LIBS= [dll_env.LibName('ucan_utils'),dll_env.LibName('can')]);	
+	  
+can_lib = dll_env.SharedLibrary(dll_env.SharedLibName('Can'),
+						['can.cpp',
+						 'can_win.cpp', 
+						 'can_unix.cpp',
+						 'CanAdapterManager.cpp'
+						 ]);
+
+if int(dll_env['RELEASE']) == 1:
+	for dir in dll_env['INSTALL_DIRS']:
+		Default(dll_env.Install('%s/dll' % dir, can_lib))
+		Default(dll_env.Install('%s/include' % dir, ['can.h', 'CanDllPort.hpp', 'CanDllWrapper.hpp']))
+
+test = SConscript(['test/SConscript']);
+
+objs = []
+objs.append(can_lib)
+
+Return('objs');
