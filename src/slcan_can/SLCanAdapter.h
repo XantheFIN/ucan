@@ -22,6 +22,7 @@
 #define SL_CAN_ADAPTER_H_
 
 #include <boost/noncopyable.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include "../can/CanMessage.h"
 #include "../can/CanMessageBuffer.h"
@@ -107,7 +108,7 @@ public:
 	}
 
 private:
-	SLCanAdapter_p *pimpl;
+    boost::scoped_ptr<SLCanAdapter_p> pimpl;
 };
 
 #endif /* SL_CAN_ADAPTER_H_ */

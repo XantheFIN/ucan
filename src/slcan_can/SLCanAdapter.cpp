@@ -31,11 +31,6 @@
 
 #include "SLCanAdapter.h"
 
-/*
- * TODO:
- * - support time-stamps?
- * - detect overflow when parsing strings
- */
 class SLCanAdapter_p {
 	static const int POLL_TIMEOUT_MS = 10;
 	static const int DEFAULT_LINE_RX_TIMEOUT_MS = 3000;
@@ -44,8 +39,21 @@ class SLCanAdapter_p {
 	static const int OpenPortTimeourtMs = 500;
 
 public:
-	SLCanAdapter_p(std::string aChannelName, uint32_t aBaudrate);
-	virtual ~SLCanAdapter_p();
+	SLCanAdapter_p(std::string aChannelName, uint32_t aBaudrate):
+			mChannelName(aChannelName), mBaudrate(aBaudrate), mAc01(0), mAc23(0), mAm01(0), mAm23(0),
+			mSerialBaudrate(115200),
+			mThread(), mRxBuf(), mTxBuf(), mTxAckBuf(), mIsOpen(false),
+			mLogFile(), mMutex(), mCmdMutex(), mReponseStatus(""), mNotifier(), mRxTimeout(DEFAULT_LINE_RX_TIMEOUT_MS),
+			mLastStatusUpdateTime(boost::posix_time::neg_infin), mAdapterState(CanAdapter::Unknown)
+	{
+		;
+	}
+
+	~SLCanAdapter_p(){
+		if(mIsOpen){
+			close();
+		}
+	}
 
 	static bool getFirstChannelName(std::string &aName);
 	static bool getNextChannelName(std::string &aName);
@@ -67,7 +75,7 @@ private:
 	bool sendCommand(std::string aCommand, std::string &aReponse);
 	bool getSetBaudrateCmd(uint32_t aBaudrate, std::string &aBaudrateCmd);
 	void getSetFilterCmds(uint16_t aAc01, uint16_t aAc23, uint16_t aAm01, uint16_t aAm23, std::string &aCodeCmd, std::string &aMaskCmd);
-	bool encode(SharedCanMessage aMsg, std::string &aTxCmd);
+	void encode(SharedCanMessage aMsg, std::string &aTxCmd);
 	bool decode(std::string aRxCmd, SharedCanMessage &aMsg);
 	void receive();
 	void resetResponseStatus();
@@ -80,9 +88,6 @@ private:
 	uint32_t mBaudrate;
 	uint16_t mAc01, mAc23;
 	uint16_t mAm01, mAm23;
-
-//	SerialDllWrapper mJSerial;
-//	int mSerialHandle;
 
 	static int mPortIndex;
 
@@ -101,6 +106,7 @@ private:
 
 	std::string mReponseStatus;
 	mutable boost::mutex mMutex;
+	mutable boost::mutex mCmdMutex;
 	boost::condition_variable mNotifier;
 
 	boost::posix_time::ptime mLastStatusUpdateTime;
@@ -109,23 +115,26 @@ private:
 	LogFile mLogFile;
 };
 
+const int SLCanAdapter_p::POLL_TIMEOUT_MS;
+const int SLCanAdapter_p::CMD_TX_TIMEOUT_MS;
+const int SLCanAdapter_p::DEFAULT_LINE_RX_TIMEOUT_MS;
+
+int SLCanAdapter_p::mPortIndex = 0;
+std::vector<std::string> SLCanAdapter_p::mDetectedPorts;
+
 SLCanAdapter::SLCanAdapter(std::string aChannelName, uint32_t aBaudrate):
 	pimpl(new SLCanAdapter_p(aChannelName, aBaudrate)){
-
 }
 
 SLCanAdapter::~SLCanAdapter(){
-	delete pimpl; // not sure if this is necessary
 }
 
 bool SLCanAdapter::getFirstChannelName(std::string &aName){
 	return SLCanAdapter_p::getFirstChannelName(aName);
-	//return false;
 }
 
 bool SLCanAdapter::getNextChannelName(std::string &aName){
 	return SLCanAdapter_p::getNextChannelName(aName);
-	//return false;
 }
 
 bool SLCanAdapter::setParameter(std::string aKey, std::string aValue){
@@ -205,13 +214,6 @@ void SLCanAdapter::close(){
 	pimpl->close();
 }
 
-const int SLCanAdapter_p::POLL_TIMEOUT_MS;
-const int SLCanAdapter_p::CMD_TX_TIMEOUT_MS;
-const int SLCanAdapter_p::DEFAULT_LINE_RX_TIMEOUT_MS;
-
-int SLCanAdapter_p::mPortIndex = 0;
-std::vector<std::string> SLCanAdapter_p::mDetectedPorts;
-
 bool SLCanAdapter_p::getFirstChannelName(std::string &aName){
 	mPortIndex = 0;
 	if(!SerialPortEnumerator::enumeratePorts(mDetectedPorts)){
@@ -231,22 +233,6 @@ bool SLCanAdapter_p::getNextChannelName(std::string &aName){
 	}
 	// no new channel found
 	return(false);
-}
-
-SLCanAdapter_p::SLCanAdapter_p(std::string aChannelName, uint32_t aBaudrate):
-		mChannelName(aChannelName), mBaudrate(aBaudrate), mAc01(0), mAc23(0), mAm01(0), mAm23(0),
-		/*mJSerial(), mSerialHandle(0),*/ mSerialBaudrate(115200),
-		mThread(), mRxBuf(), mTxBuf(), mTxAckBuf(), mIsOpen(false),
-		mLogFile(), mMutex(), mReponseStatus(""), mNotifier(), mRxTimeout(DEFAULT_LINE_RX_TIMEOUT_MS),
-		mLastStatusUpdateTime(boost::posix_time::neg_infin), mAdapterState(CanAdapter::Unknown)
-{
-	;
-}
-
-SLCanAdapter_p::~SLCanAdapter_p(){
-	if(mIsOpen){
-		close();
-	}
 }
 
 bool SLCanAdapter_p::setParameter(std::string aKey, std::string aValue){
@@ -280,9 +266,6 @@ void SLCanAdapter_p::close(){
 
 		mHaltThread = true;
 		mThread.join();
-
-//		mJSerial.close(mSerialHandle);
-//		mJSerial.releaseHandle(mSerialHandle);
 
 		mAsyncSerial->clearCallback();
 		mAsyncSerial.reset();
@@ -349,27 +332,6 @@ bool SLCanAdapter_p::open(){
 		return false;
 	}
 
-#if 0
-	if(mJSerial.loadDll() != 0){
-		LOG(logERROR) << "Unable to load jSerial DLL";
-		return false;
-	}
-
-	SER_AdapterType comAdapter = SER_Boost;
-	mSerialHandle = mJSerial.obtainHandle(comAdapter, mChannelName.c_str());
-	if(mSerialHandle == 0){
-		LOG(logERROR) << "Unable to obtain serial handle";
-		return false;
-	}
-
-	mJSerial.setBaudRate(mSerialHandle, mSerialBaudrate);
-	if(!mJSerial.open(mSerialHandle)){
-		LOG(logERROR) << "Unable to open serial port";
-		return false;
-	}
-
-
-#else
 	int timeElapsedMs = 0;
 	int retryPauseMs = 20;
 	while(true){
@@ -390,7 +352,6 @@ bool SLCanAdapter_p::open(){
 		}
 	}
 	mAsyncSerial->setCallback(boost::bind(&SLCanAdapter_p::rxCallback,this,_1,_2));
-#endif
 
 	// start receive thread
 	mHaltThread = false;
@@ -476,9 +437,7 @@ bool SLCanAdapter_p::write(SharedCanMessage aMsg){
 	}
 
 	std::string req, rsp;
-	if(!encode(aMsg, req)){
-		return false;
-	}
+	encode(aMsg, req);
 
 	if(!sendCommand(req, rsp)){
 		return false;
@@ -492,6 +451,7 @@ enum CanAdapter::CanAdapterState SLCanAdapter_p::getState(){
 	if(!mIsOpen){
 		mAdapterState = CanAdapter::Closed;
 	} else {
+		mAdapterState = CanAdapter::Unknown;
 		boost::posix_time::time_duration d = boost::posix_time::microsec_clock::local_time() - mLastStatusUpdateTime;
 		if(d.total_milliseconds() > StatusUpdateSpacingMs){
 			mLastStatusUpdateTime = boost::posix_time::microsec_clock::local_time();
@@ -580,7 +540,7 @@ void SLCanAdapter_p::getSetFilterCmds(uint16_t aAc01, uint16_t aAc23, uint16_t a
 	aMaskCmd = osm.str();
 }
 
-bool SLCanAdapter_p::encode(SharedCanMessage aMsg, std::string &aTxCmd){
+void SLCanAdapter_p::encode(SharedCanMessage aMsg, std::string &aTxCmd){
 	std::ostringstream oss;
 	if(aMsg->isExtended()){
 		oss << "T" << std::setfill('0') << std::hex << std::setw(8) << aMsg->getId();
@@ -592,29 +552,32 @@ bool SLCanAdapter_p::encode(SharedCanMessage aMsg, std::string &aTxCmd){
 		oss << std::setw(2) << (int)aMsg->getData(i);
 	}
 	aTxCmd = oss.str();
-	return true;
 }
 
 bool SLCanAdapter_p::decode(std::string aRxCmd, SharedCanMessage &aMsg){
 	SharedCanMessage m;
 	int dataStartIndex;
-	if(boost::algorithm::starts_with(aRxCmd, "R") || boost::algorithm::starts_with(aRxCmd, "T")){
-		int id = (int)strtol(aRxCmd.substr(1,8).c_str(), NULL, 16);
-		int dlc = (int)strtol(aRxCmd.substr(9,1).c_str(), NULL, 16);
-		m = CanMessage::getSharedInstance(id, dlc, true);
-		dataStartIndex = 10;
-	} else if(boost::algorithm::starts_with(aRxCmd, "r") || boost::algorithm::starts_with(aRxCmd, "t")){
-		int id = (int)strtol(aRxCmd.substr(1,3).c_str(), NULL, 16);
-		int dlc = (int)strtol(aRxCmd.substr(4,1).c_str(), NULL, 16);
-		m = CanMessage::getSharedInstance(id, dlc);
-		dataStartIndex = 5;
-	} else {
+	try {
+		if(boost::algorithm::starts_with(aRxCmd, "T")){
+			int id = (int)strtol(aRxCmd.substr(1,8).c_str(), NULL, 16);
+			int dlc = (int)strtol(aRxCmd.substr(9,1).c_str(), NULL, 16);
+			m = CanMessage::getSharedInstance(id, dlc, true);
+			dataStartIndex = 10;
+		} else if(boost::algorithm::starts_with(aRxCmd, "t")){
+			int id = (int)strtol(aRxCmd.substr(1,3).c_str(), NULL, 16);
+			int dlc = (int)strtol(aRxCmd.substr(4,1).c_str(), NULL, 16);
+			m = CanMessage::getSharedInstance(id, dlc);
+			dataStartIndex = 5;
+		} else {
+			return false;
+		}
+		for(int i=0; i<m->getLen(); i++){
+			int b = (int)strtol(aRxCmd.substr(dataStartIndex,2).c_str(), NULL, 16);
+			m->setData(i, b);
+			dataStartIndex += 2;
+		}
+	} catch(...) {
 		return false;
-	}
-	for(int i=0; i<m->getLen(); i++){
-		int b = (int)strtol(aRxCmd.substr(dataStartIndex,2).c_str(), NULL, 16);
-		m->setData(i, b);
-		dataStartIndex += 2;
 	}
 	aMsg = m;
 	return true;
@@ -637,26 +600,21 @@ std::string SLCanAdapter_p::getResponseStatus(){
 }
 
 bool SLCanAdapter_p::sendCommand(std::string aCommand, std::string &aResponse){
+	boost::mutex::scoped_lock cmdLock(mCmdMutex);
+
 	mLogFile.debugStream() << "cmd: " << aCommand;
 
 	// terminate with CR
 	if(!boost::algorithm::ends_with(aCommand, "\r")){
 		aCommand += "\r";
 	}
-	// convert to char vector
+	// convert to char vector and
 	std::vector<char> vCmd(aCommand.begin(), aCommand.end());
-	char *cCmd = new char[vCmd.size()];
-	for(int i=0; i<vCmd.size(); i++){
-		cCmd[i] = vCmd[i];
-	}
 
 	boost::mutex::scoped_lock lock(mMutex);
 	resetResponseStatus();
 
-	//mJSerial.write(mSerialHandle, cCmd, vCmd.size());
 	mAsyncSerial->write(vCmd);
-
-	delete[] cCmd;
 
 	boost::chrono::milliseconds period(CMD_TX_TIMEOUT_MS);
 	boost::chrono::system_clock::time_point wakeUpTime = boost::chrono::system_clock::now() + period;
@@ -684,7 +642,7 @@ void SLCanAdapter_p::receive(){
 	bool eol = false;
 	bool err = false;
 	while(!mHaltThread){
-		if(mSerialRxBuf.pop(inc, 0)){
+		if(mSerialRxBuf.pop(inc, POLL_TIMEOUT_MS)){
 			mRxTimer = 0;
 			if(inc == '\r'){
 				eol = true;
@@ -700,7 +658,7 @@ void SLCanAdapter_p::receive(){
 				mRxTimer += POLL_TIMEOUT_MS;
 				if(mRxTimer > mRxTimeout){
 					mLogFile.debugStream() << "Rx timeout";
-					eol = true;
+					mInBuf.clear();
 				}
 			} else {
 				mRxTimer = 0;
