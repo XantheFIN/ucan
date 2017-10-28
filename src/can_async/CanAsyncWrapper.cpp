@@ -60,7 +60,6 @@ bool CanAsyncWrapper::open(SharedCanAdapter aCanAdapter){
 	if(pimpl->mPortIsOpen){
 		close();
 	}
-
 	pimpl->mCan.reset();
 	pimpl->mCan = aCanAdapter;
 	pimpl->mPortIsOpen = true; // port is now open
