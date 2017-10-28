@@ -33,7 +33,7 @@ EnsureSConsVersion(1,2)
 # get build options
 vars = Variables('build_options.py') 
 vars.AddVariables(
-        ('ARCH', 'Architecture (32/64bit)','64'),
+        ('ARCH', 'Architecture (32/64bit)','32'),
         ('RELEASE', 'Set to 1 to build for release', '0'),
         ('INSTALL_DIRS', 'Specify installation directories', []),    
         )
