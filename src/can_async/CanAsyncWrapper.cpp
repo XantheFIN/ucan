@@ -61,6 +61,7 @@ bool CanAsyncWrapper::open(SharedCanAdapter aCanAdapter){
 		close();
 	}
 
+	pimpl->mCan.reset();
 	pimpl->mCan = aCanAdapter;
 	pimpl->mPortIsOpen = true; // port is now open
 	return pimpl->mPortIsOpen;
@@ -75,17 +76,27 @@ void CanAsyncWrapper::close(){
     	return;
     }
     pimpl->mPortIsOpen = false;
+    pimpl->mCan.reset(); // don't hold on to pointer
 }
 
 bool CanAsyncWrapper::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	 return pimpl->mCan->getSentMessage(aMsg, aTimeoutMs);
+    if(!pimpl->mPortIsOpen){
+    	return false;
+    }
+	return pimpl->mCan->getSentMessage(aMsg, aTimeoutMs);
 }
 
 bool CanAsyncWrapper::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+    if(!pimpl->mPortIsOpen){
+    	return false;
+    }
 	return pimpl->mCan->getReceivedMessage(aMsg, aTimeoutMs);
 }
 
 bool CanAsyncWrapper::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
+    if(!pimpl->mPortIsOpen){
+    	return false;
+    }
 	return pimpl->mCan->sendMessage(aMsg, aTimeoutMs);
 }
 
