@@ -27,7 +27,7 @@ Import('env')
 lib_env = env.Clone();
 
 if ((os.name == 'nt') and (platform.system() == 'Windows' )):
-	lib_env['PDB'] = lib_env.LibName('utils')+'.pdb'
+	lib_env['PDB'] = lib_env.LibName('ucan_utils')+'.pdb'
 
 elif((os.name == 'posix') and (platform.system() == 'Linux' )):
 	lib_env.Append(CXXFLAGS = ' -fPIC ')
