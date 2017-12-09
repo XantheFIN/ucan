@@ -78,7 +78,11 @@ public:
 	}
 
 	bool isValid(std::size_t aHandle){
-		return (mInstances[aHandle] != mInstances[0]);
+		if(aHandle < mNextFreshHandle){
+			return (mInstances[aHandle] != mInstances[0]);
+		} else {
+			return false;
+		}
 	}
 
 	std::size_t nextFreshHandle(){
