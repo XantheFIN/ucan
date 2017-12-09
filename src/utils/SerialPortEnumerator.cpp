@@ -48,6 +48,7 @@ SerialPortEnumerator::~SerialPortEnumerator(){
 }
 
 bool SerialPortEnumerator::enumeratePorts(std::vector<std::string>& ports){
+	ports.clear();
 #if defined(SCONS_TARGET_WIN)
 	bool success = false;
 	HKEY keyHandle;
