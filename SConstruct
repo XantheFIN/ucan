@@ -79,6 +79,7 @@ VariantDir('build/utils', 'src/utils', 0)
 VariantDir('build/can', 'src/can', 0)
 VariantDir('build/can_dll', 'src/can_dll', 0)
 VariantDir('build/can_async', 'src/can_async', 0)
+VariantDir('build/can_lua', 'src/can_lua', 0)
 VariantDir('build/slcan_can', 'src/slcan_can', 0)
 VariantDir('build/socketcan_can', 'src/socketcan_can', 0)
 
@@ -89,6 +90,7 @@ if ((os.name == 'nt') and (platform.system() == 'Windows' )):
 		'build/utils',
 		'build/can',
 		'build/can_dll',
+		'build/can_lua',
 		'build/can_async',
 		'build/slcan_can',
 		]
@@ -97,6 +99,7 @@ if ((os.name == 'nt') and (platform.system() == 'Windows' )):
 		'build/utils',
 		'build/can',
 		'build/can_dll',
+		'build/can_lua',
 		'build/can_async',
 		'build/slcan_can',
 		]

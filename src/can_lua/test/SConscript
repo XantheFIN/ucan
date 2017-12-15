@@ -1,0 +1,73 @@
+"""
+ * This file is part of a CODESKIN library that is being made available
+ * as open source under the GNU Lesser General Public License.
+ *
+ * Copyright 2017 by CodeSkin LLC, www.codeskin.com.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import sys
+import platform
+
+Import('env')
+
+test_env = env.Clone();
+
+if ((os.name == 'posix') and (platform.system() == 'Linux' )):  
+	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,build/lua/test") 
+#	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,\$${ORIGIN}")
+		
+elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
+	test_env.Append(LINKFLAGS="")
+#	test_env.Append(LINKFLAGS = " -Wl,-rpath -Wl,@loader_path/../Frameworks")
+
+elif ((os.name == 'nt') and (platform.system() == 'Windows' )):
+	test_env.Append(LINKFLAGS="")
+	 						
+test_env.Append(CPPPATH = ['../', '../../can_dll']);
+								 
+test = test_env.Program('TestCanLua',['test.cpp']);
+
+can_dll = test_env.Command(test_env.SharedLibNameExt('Can'), "../../can_dll/"+test_env.SharedLibNameExt('Can'), Copy("$TARGET", "$SOURCE"))
+slcan_dll = test_env.Command(test_env.SharedLibNameExt('SLCan'), "../../slcan_can/"+test_env.SharedLibNameExt('SLCan'), Copy("$TARGET", "$SOURCE"))
+
+if((os.name == 'nt') and (platform.system() == 'Windows' )):
+	if int(test_env['ARCH']) == 32:	
+		test_env.Requires(test, [
+			can_dll, 
+			slcan_dll
+			])	
+	else:
+		test_env.Requires(test, [
+			can_dll, 
+			slcan_dll
+			])
+			
+elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
+	test_env.Requires(test, [
+		can_dll, 
+		slcan_dll
+		])
+		
+lua_dll = test_env.Command(test_env.SharedLibNameExt('Lua'), '../lib/'+test_env.SharedLibNameExt('Lua'), Copy("$TARGET", "$SOURCE"))	
+module_dll = test_env.Command(test_env.SharedLibNameExt('CanLua'), '../'+test_env.SharedLibNameExt('CanLua'), Copy("$TARGET", "$SOURCE"))	
+test_lua = test_env.Command('test.lua', 'lua/test.lua', Copy("$TARGET", "$SOURCE"))
+
+test_env.Requires(test, [lua_dll, module_dll, test_lua])		
+
+objs = []
+Return('objs')	
+
