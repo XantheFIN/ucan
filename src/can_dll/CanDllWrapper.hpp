@@ -55,7 +55,7 @@ public:
 	void releaseHandle(int aHandle);
 	void releaseAllHandles();
 
-	int setParameter(int aHandle,  char *aKey, char *aValue);
+	int setParameter(int aHandle,  const char *aKey, const char *aValue);
 	int setBaudRate(int aHandle, uint32_t aBaudrate);
 	int getNumberOfFilters(int aHandle);
 	int setAcceptanceFilter(int aHandle, int aFid, uint32_t aCode, uint32_t aMask, int IsExt);
@@ -107,7 +107,7 @@ class CanDllWrapper_p {
 	typedef void (*DllReleaseHandleFcn)(int);
 	typedef void (*DllReleaseAllHandlesFcn)();
 
-	typedef int (*DllSetParameterFcn)(int, char*, char*);
+	typedef int (*DllSetParameterFcn)(int, const char*, const char*);
 	typedef int (*DllSetBaudRateFcn)(int, int);
 	typedef int (*DllGetNumberOfFiltersFcn)(int);
 	typedef int (*DllSetAcceptanceFilterFcn)(int, int, int, int, int);
@@ -396,7 +396,7 @@ inline void CanDllWrapper::releaseAllHandles(){
 	pimpl->getReleaseAllHandlesFcn()();
 }
 
-inline int CanDllWrapper::setParameter(int aHandle,  char *aKey, char *aValue){
+inline int CanDllWrapper::setParameter(int aHandle,  const char *aKey, const char *aValue){
 	return pimpl->getSetParameterFcn()(aHandle, aKey, aValue);
 }
 

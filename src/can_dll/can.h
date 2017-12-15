@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#define CAN_DLL_VERSION 0x0020 // 0.2
+#define CAN_DLL_VERSION 0x0030 // 0.3
 
 #define CAN_FLAG_IS_EXTENDED 0x0001
 #define CAN_FLAG_IS_REMOTE_FRAME 0x0002
@@ -70,7 +70,7 @@ DLLEXPORT int CAN_handleExists(int aHandle);
 DLLEXPORT void CAN_releaseHandle(int aHandle);
 DLLEXPORT void CAN_releaseAllHandles();
 
-DLLEXPORT int CAN_setParameter(int aHandle, char* aKey, char* aValue);
+DLLEXPORT int CAN_setParameter(int aHandle, const char* aKey, const char* aValue);
 DLLEXPORT int CAN_setBaudRate(int aHandle, uint32_t aBaudrate);
 DLLEXPORT int CAN_getNumberOfFilters(int aHandle);
 // convention for mask: 1 = relevant

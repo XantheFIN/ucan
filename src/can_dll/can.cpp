@@ -127,7 +127,7 @@ void CAN_releaseAllHandles(){
 	Manager->releaseAllHandles();
 }
 
-int CAN_setParameter(int aHandle, char* aKey, char* aValue){
+int CAN_setParameter(int aHandle, const char* aKey, const char* aValue){
 	std::string key(aKey);
 	std::string value(aValue);
 	return Manager->adapter(aHandle)->setParameter(key, value);
