@@ -43,7 +43,7 @@ env = Environment(variables = vars);
 
 unknown = vars.UnknownVariables()
 if unknown:
-	print "Unknown variables:", unknown.keys()
+	print("Unknown variables:", unknown.keys())
 	Exit(1)
 
 Help(vars.GenerateHelpText(env))
