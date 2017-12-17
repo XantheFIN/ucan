@@ -31,8 +31,7 @@ if ((os.name == 'posix') and (platform.system() == 'Linux' )):
 #	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,\$${ORIGIN}")
 		
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
-	test_env.Append(LINKFLAGS="")
-#	test_env.Append(LINKFLAGS = " -Wl,-rpath -Wl,@loader_path/../Frameworks")
+	test_env.Append(LINKFLAGS = "-Wl,-rpath -Wl,@executable_path")
 
 elif ((os.name == 'nt') and (platform.system() == 'Windows' )):
 	test_env.Append(LINKFLAGS="")

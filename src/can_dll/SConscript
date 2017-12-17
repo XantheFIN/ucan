@@ -36,6 +36,7 @@ elif((os.name == 'nt') and (platform.system() == 'Windows' )):
 	
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):	
 	dll_env.Append(LINKFLAGS= ' -install_name @rpath/'+dll_env.SharedLibNameExt('Can')+' ') 
+#	dll_env.Append(LINKFLAGS = ' -Wl,-rpath -Wl,@loader_path')
 	
 dll_env.Append(LIBPATH = ['../utils','../can'])	
 dll_env.Append(LIBS= [dll_env.LibName('ucan_utils'),dll_env.LibName('can')]);	

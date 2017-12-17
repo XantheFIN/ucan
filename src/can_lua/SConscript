@@ -31,8 +31,8 @@ if ((os.name == 'posix') and (platform.system() == 'Linux' )):
 #	module_env.Append(LINKFLAGS="-Wl,-rpath -Wl,\$${ORIGIN}")
 		
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
-	module_env.Append(LINKFLAGS="")
-#	module_env.Append(LINKFLAGS = " -Wl,-rpath -Wl,@loader_path/../Frameworks")
+	module_env.Append(LINKFLAGS = ' -install_name @rpath/'+module_env.SharedLibNameExt('CanLua')+' ') 
+	module_env.Append(LINKFLAGS = ' -Wl,-rpath -Wl,@loader_path')
 
 elif ((os.name == 'nt') and (platform.system() == 'Windows' )):
 	module_env.Append(LINKFLAGS="")
