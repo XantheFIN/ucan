@@ -80,7 +80,7 @@ private:
 	void doRead();
 	void readEnd(struct can_frame &aRxFrame, const boost::system::error_code& error, size_t bytes_transferred);
 	void doWrite();
-	void writeEnd(struct can_frame &aTxFrame);
+	void writeEnd(struct can_frame &aTxFrame, const boost::system::error_code& error);
 	void doClose();
 
 	std::string mChannelName;
@@ -159,10 +159,12 @@ bool SocketCanAdapter::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTime
 }
 
 int SocketCanAdapter::numSentMessagesAvailable(){
-	return pimpl->numSentMessagesAvailable();}
+	return pimpl->numSentMessagesAvailable();
+}
 
 bool SocketCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	return pimpl->getSentMessage(aMsg, aTimeoutMs);}
+	return pimpl->getSentMessage(aMsg, aTimeoutMs);
+}
 
 void SocketCanAdapter::close(){
 	pimpl->close();
@@ -203,11 +205,8 @@ void SocketCanAdapter_p::close(){
 		mRxBuf.clear();
 		mTxAckBuf.clear();
 
-		mLogFile.close();
-
-		mIsOpen = false;
-
 		mLogFile.debugStream() << "closed" << std::endl;
+		mLogFile.close();
 	}
 }
 
@@ -393,6 +392,9 @@ bool SocketCanAdapter_p::fromCanFrame(struct can_frame &aFrame, SharedCanMessage
 
 // this method is always executed in the ioservice thread
 void SocketCanAdapter_p::doRead(){
+	if(!mIsOpen){
+		return;
+	}
 	mStream.async_read_some(boost::asio::buffer(&mRxFrame, sizeof(mRxFrame)),
 			boost::bind(&SocketCanAdapter_p::readEnd, this ,
 					boost::ref(mRxFrame),
@@ -422,6 +424,9 @@ void SocketCanAdapter_p::readEnd(struct can_frame& aRxFrame,
 
 // this method is always executed in the ioservice thread
 void SocketCanAdapter_p::doWrite(){
+	if(!mIsOpen){
+		return;
+	}
 	if(!mWriteIsIdle){
 		// write already in progress
 	}
@@ -430,26 +435,36 @@ void SocketCanAdapter_p::doWrite(){
 	if(mTxBuf.pop(m, 0)){
 		if(toCanFrame(m, mTxFrame)){
 			mWriteIsIdle = false;
-			mStream.async_write_some(boost::asio::buffer(&mTxFrame, sizeof(mTxFrame)),boost::bind(&SocketCanAdapter_p::writeEnd, this, boost::ref(mTxFrame)));
+			mStream.async_write_some(boost::asio::buffer(&mTxFrame, sizeof(mTxFrame)),
+					boost::bind(&SocketCanAdapter_p::writeEnd, this,
+							boost::ref(mTxFrame),
+							boost::asio::placeholders::error));
 		}
 	}
 }
 
 // this method is always executed in the ioservice thread
-void SocketCanAdapter_p::writeEnd(struct can_frame &aTxFrame){
-	SharedCanMessage m;
-	if(fromCanFrame(aTxFrame, m)){
-		mLogFile.debugStream() << "Write end: " << m;
-		mTxAckBuf.push(m, 0);
+void SocketCanAdapter_p::writeEnd(struct can_frame &aTxFrame, const boost::system::error_code& error){
+	if(error){
+		mLogFile.debugStream() << "Write end with error";
+		if(mIsOpen){
+			doClose();
+		}
+	} else {
+		SharedCanMessage m;
+		if(fromCanFrame(aTxFrame, m)){
+			mLogFile.debugStream() << "Write end: " << m;
+			mTxAckBuf.push(m, 0);
+		}
+		mWriteIsIdle = true;
+		doWrite();
 	}
-	mWriteIsIdle = true;
-	doWrite();
 }
 
 // this method is always executed in the ioservice thread
 void SocketCanAdapter_p::doClose(){
-	boost::system::error_code ec;
-	mStream.cancel(ec);
-	mStream.close(ec);
+	mIsOpen = false;
+	mStream.cancel();
+	mStream.close();
 	::close(mNatsock); // TODO: make sure this is correct
 }
