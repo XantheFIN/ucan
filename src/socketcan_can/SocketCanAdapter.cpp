@@ -32,6 +32,7 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/atomic.hpp>
 
 #include "../utils/Logger.h"
 #include "../utils/LogFile.h"
@@ -56,11 +57,21 @@ public:
 	int getNumberOfFilters();
 	bool setAcceptanceFilter(int fid, uint32_t code, uint32_t mask, bool isExt);
 
+	bool goBusOn();
+	bool goBusOff();
+
+	bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs);
+
+	int numReceivedMessagesAvailable();
+	int numSentMessagesAvailable();
+	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+
 	bool open();
 	void close();
 	bool write(SharedCanMessage aMsg);
 
-	bool mIsOpen;
+	boost::atomic_bool mIsOpen;
 	CanMessageBuffer mRxBuf;
 	CanMessageBuffer mTxBuf;
 	CanMessageBuffer mTxAckBuf;
@@ -96,7 +107,7 @@ SocketCanAdapter::SocketCanAdapter(std::string aChannelName, uint32_t aBaudrate)
 }
 
 SocketCanAdapter::~SocketCanAdapter(){
-	delete pimpl; // not sure if this is necessary
+	pimpl.reset();
 }
 
 bool SocketCanAdapter::getFirstChannelName(std::string &aName){
@@ -112,9 +123,6 @@ bool SocketCanAdapter::setParameter(std::string aKey, std::string aValue){
 };
 
 bool SocketCanAdapter::setBaudRate(uint32_t aBaudrate){
-	if(pimpl->mIsOpen){
-		return false;
-	}
 	return pimpl->setBaudRate(aBaudrate);
 }
 
@@ -123,9 +131,6 @@ int SocketCanAdapter::getNumberOfFilters(){
 }
 
 bool SocketCanAdapter::setAcceptanceFilter(int fid, uint32_t code, uint32_t mask, bool isExt){
-	if(pimpl->mIsOpen){
-		return false;
-	}
 	return pimpl->setAcceptanceFilter(fid, code, mask, isExt);
 }
 
@@ -134,60 +139,30 @@ bool SocketCanAdapter::open(){
 }
 
 bool SocketCanAdapter::goBusOn(){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return true;
+	return pimpl->goBusOn();
 }
 
 bool SocketCanAdapter::goBusOff(){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return true;
+	return pimpl->goBusOff();
 }
 
 bool SocketCanAdapter::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-
-	if(!pimpl->write(aMsg)){
-		return false;
-	}
-
-	// acknowledge transmit
-	pimpl->mTxAckBuf.push(CanMessage::getSharedInstance(aMsg), 0);
-	return true;
+	return pimpl->sendMessage(aMsg, aTimeoutMs);
 }
 
 int SocketCanAdapter::numReceivedMessagesAvailable(){
-	if(!pimpl->mIsOpen){
-		return(0);
-	}
-	return(pimpl->mRxBuf.available());
+	return pimpl->numReceivedMessagesAvailable();
 }
 
 bool SocketCanAdapter::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return(pimpl->mRxBuf.pop(aMsg, aTimeoutMs));
+	return pimpl->getReceivedMessage(aMsg, aTimeoutMs);
 }
 
 int SocketCanAdapter::numSentMessagesAvailable(){
-	if(!pimpl->mIsOpen){
-		return(0);
-	}
-	return(pimpl->mTxAckBuf.available());
-}
+	return pimpl->numSentMessagesAvailable();}
 
 bool SocketCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return(pimpl->mTxAckBuf.pop(aMsg, aTimeoutMs));
-}
+	return pimpl->getSentMessage(aMsg, aTimeoutMs);}
 
 void SocketCanAdapter::close(){
 	pimpl->close();
@@ -316,6 +291,63 @@ bool SocketCanAdapter_p::open(){
 
 	mIsOpen = true;
 	return true;
+}
+
+
+bool SocketCanAdapter_p::goBusOn(){
+	if(!mIsOpen){
+		return false;
+	}
+	return true;
+}
+
+bool SocketCanAdapter_p::goBusOff(){
+	if(!mIsOpen){
+		return false;
+	}
+	return true;
+}
+
+bool SocketCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
+	if(!mIsOpen){
+		return false;
+	}
+
+	if(!write(aMsg)){
+		return false;
+	}
+
+	// acknowledge transmit
+	mTxAckBuf.push(CanMessage::getSharedInstance(aMsg), 0);
+	return true;
+}
+
+int SocketCanAdapter_p::numReceivedMessagesAvailable(){
+	if(!mIsOpen){
+		return(0);
+	}
+	return mRxBuf.available();
+}
+
+bool SocketCanAdapter_p::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+	if(!mIsOpen){
+		return false;
+	}
+	return mRxBuf.pop(aMsg, aTimeoutMs);
+}
+
+int SocketCanAdapter_p::numSentMessagesAvailable(){
+	if(!mIsOpen){
+		return(0);
+	}
+	return mTxAckBuf.available();
+}
+
+bool SocketCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+	if(!mIsOpen){
+		return false;
+	}
+	return mTxAckBuf.pop(aMsg, aTimeoutMs);
 }
 
 bool SocketCanAdapter_p::write(SharedCanMessage aMsg){
