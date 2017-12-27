@@ -86,41 +86,16 @@ public:
     bool setBaudrate(unsigned int baud_rate) const;
 
     /**
-     * \return true if serial device is open
-     */
-    bool isOpen() const;
-
-    /**
-     * \return true if error were found
-     */
-    bool errorStatus() const;
-
-    /**
      * Close the serial device
      * \throws boost::system::system_error if any error
      */
     void close();
-
-    /**
-     * Write data asynchronously. Returns immediately.
-     * \param data array of char to be sent through the serial device
-     * \param size array size
-     */
-    void write(const char *data, size_t size);
 
      /**
      * Write data asynchronously. Returns immediately.
      * \param data to be sent through the serial device
      */
     void write(const std::vector<char>& data);
-
-    /**
-    * Write a string asynchronously. Returns immediately.
-    * Can be used to send ASCII data to the serial device.
-    * To send binary data, use write()
-    * \param s string to send
-    */
-    void writeString(const std::string& s);
 
     virtual ~AsyncSerial()=0;
 
@@ -165,12 +140,6 @@ private:
     boost::shared_ptr<AsyncSerialImpl> pimpl;
 
 protected:
-
-    /**
-     * To allow derived classes to report errors
-     * \param e error status
-     */
-    void setErrorStatus(bool e);
 
     /**
      * To allow derived classes to set a read callback

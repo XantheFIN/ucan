@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
+#include <boost/atomic.hpp>
 
 //
 //Class AsyncSerial
@@ -18,15 +19,12 @@
 class AsyncSerialImpl: private boost::noncopyable
 {
 public:
-    AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false),
-            error(false) {}
+    AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false){}
 
     boost::asio::io_service io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
     boost::thread backgroundThread; ///< Thread that runs read/write operations
-    bool open; ///< True if port open
-    bool error; ///< Error flag
-    mutable boost::mutex errorMutex; ///< Mutex for access to error
+    boost::atomic_bool open; ///< True if port open
 
     /// Data are queued here before they go in writeBuffer
     std::vector<char> writeQueue;
@@ -60,9 +58,8 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 		boost::asio::serial_port_base::flow_control opt_flow,
 		boost::asio::serial_port_base::stop_bits opt_stop)
 {
-    if(isOpen()) close();
+    if(pimpl->open) close();
 
-    setErrorStatus(true);//If an exception is thrown, error_ remains true
     pimpl->port.open(devname);
     pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
     pimpl->port.set_option(opt_parity);
@@ -83,18 +80,12 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 
     boost::thread t(boost::bind(&boost::asio::io_service::run, &pimpl->io));
     pimpl->backgroundThread.swap(t);
-    setErrorStatus(false);//If we get here, no error
-    pimpl->open=true; //Port is now open
-}
-
-bool AsyncSerial::isOpen() const
-{
-    return pimpl->open;
+    pimpl->open = true; //Port is now open
 }
 
 bool AsyncSerial::setBaudrate(unsigned int baud_rate) const
 {
-	if(!isOpen())
+	if(!pimpl->open)
 	{
 		return false;
 	}
@@ -102,38 +93,16 @@ bool AsyncSerial::setBaudrate(unsigned int baud_rate) const
 	return true;
 }
 
-bool AsyncSerial::errorStatus() const
-{
-	boost::lock_guard<boost::mutex> l(pimpl->errorMutex);
-    return pimpl->error;
-}
-
 void AsyncSerial::close()
 {
-    if(!isOpen()) return;
-
-    pimpl->open=false;
     pimpl->io.post(boost::bind(&AsyncSerial::doClose, this));
     pimpl->backgroundThread.join();
     pimpl->io.reset();
-    if(errorStatus())
-    {
-        throw(boost::system::system_error(boost::system::error_code(),
-                "Error while closing the device"));
-    }
-}
-
-void AsyncSerial::write(const char *data, size_t size)
-{
-    {
-    	boost::lock_guard<boost::mutex> l(pimpl->writeQueueMutex);
-        pimpl->writeQueue.insert(pimpl->writeQueue.end(),data,data+size);
-    }
-    pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
 }
 
 void AsyncSerial::write(const std::vector<char>& data)
 {
+	if(!pimpl->open) return;
     {
     	boost::lock_guard<boost::mutex> l(pimpl->writeQueueMutex);
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),data.begin(),
@@ -142,30 +111,20 @@ void AsyncSerial::write(const std::vector<char>& data)
     pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
 }
 
-void AsyncSerial::writeString(const std::string& s)
-{
-    {
-    	boost::lock_guard<boost::mutex> l(pimpl->writeQueueMutex);
-        pimpl->writeQueue.insert(pimpl->writeQueue.end(),s.begin(),s.end());
-    }
-    pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
-}
-
 AsyncSerial::~AsyncSerial()
 {
-    if(isOpen())
-    {
-        try {
-            close();
-        } catch(...)
-        {
-            //Don't throw from a destructor
-        }
-    }
+	try {
+		close();
+	} catch(...)
+	{
+		//Don't throw from a destructor
+	}
 }
 
 void AsyncSerial::doRead()
 {
+	if(!pimpl->open) return;
+
     pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer,readBufferSize),
             boost::bind(&AsyncSerial::readEnd,
             this,
@@ -180,10 +139,9 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
     {
         //error can be true even because the serial port was closed.
         //In this case it is not a real error, so ignore
-        if(isOpen())
+        if(pimpl->open)
         {
             doClose();
-            setErrorStatus(true);
         }
     } else {
         if(pimpl->callback) pimpl->callback(pimpl->readBuffer,
@@ -194,6 +152,8 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 
 void AsyncSerial::doWrite()
 {
+	if(!pimpl->open) return;
+
     //If a write operation is already in progress, do nothing
     if(pimpl->writeBuffer==0)
     {
@@ -230,29 +190,23 @@ void AsyncSerial::writeEnd(const boost::system::error_code& error)
                 pimpl->writeBufferSize),
                 boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
     } else {
-        setErrorStatus(true);
-        doClose();
+        if(pimpl->open)
+        {
+            doClose();
+        }
     }
 }
 
 void AsyncSerial::doClose()
 {
-    boost::system::error_code ec;
-    pimpl->port.cancel(ec);
-    if(ec) setErrorStatus(true);
-    pimpl->port.close(ec);
-    if(ec) setErrorStatus(true);
-}
-
-void AsyncSerial::setErrorStatus(bool e)
-{
-	boost::lock_guard<boost::mutex> l(pimpl->errorMutex);
-    pimpl->error=e;
+    pimpl->open = false;
+    pimpl->port.cancel();
+    pimpl->port.close();
 }
 
 void AsyncSerial::setReadCallback(const boost::function<void (const char*, size_t)>& callback)
 {
-    pimpl->callback=callback;
+    pimpl->callback = callback;
 }
 
 void AsyncSerial::clearReadCallback()
