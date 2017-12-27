@@ -60,18 +60,21 @@ public:
 
 	bool setParameter(std::string aKey, std::string aValue);
 	bool setBaudRate(uint32_t aBaudrate);
+	int getNumberOfFilters();
 	bool setAcceptanceFilter(int fid, uint32_t code, uint32_t mask, bool isExt);
 	bool open();
 	void close();
+	bool goBusOn();
+	bool goBusOff();
+	bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs);
+	int numReceivedMessagesAvailable();
+	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+	int numSentMessagesAvailable();
+	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 	enum CanAdapter::CanAdapterState getState();
-	bool write(SharedCanMessage aMsg);
-
-	bool mIsOpen;
-	CanMessageBuffer mRxBuf;
-	CanMessageBuffer mTxBuf;
-	CanMessageBuffer mTxAckBuf;
 
 private:
+	bool write(SharedCanMessage aMsg);
 	bool sendCommand(std::string aCommand, std::string &aReponse);
 	bool getSetBaudrateCmd(uint32_t aBaudrate, std::string &aBaudrateCmd);
 	void getSetFilterCmds(uint16_t aAc01, uint16_t aAc23, uint16_t aAm01, uint16_t aAm23, std::string &aCodeCmd, std::string &aMaskCmd);
@@ -99,6 +102,11 @@ private:
 
 	bool mHaltThread;
 	boost::thread mThread;
+
+	bool mIsOpen;
+	CanMessageBuffer mRxBuf;
+	CanMessageBuffer mTxBuf;
+	CanMessageBuffer mTxAckBuf;
 
 	std::vector<unsigned char> mInBuf;
 	int mRxTimer;
@@ -142,14 +150,11 @@ bool SLCanAdapter::setParameter(std::string aKey, std::string aValue){
 };
 
 bool SLCanAdapter::setBaudRate(uint32_t aBaudrate){
-	if(pimpl->mIsOpen){
-		return false;
-	}
 	return pimpl->setBaudRate(aBaudrate);
 }
 
 int SLCanAdapter::getNumberOfFilters(){
-	return(2);
+	return pimpl->getNumberOfFilters();
 }
 
 bool SLCanAdapter::setAcceptanceFilter(int fid, uint32_t code, uint32_t mask, bool isExt){
@@ -161,52 +166,34 @@ bool SLCanAdapter::open(){
 }
 
 bool SLCanAdapter::goBusOn(){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return true;
+	return pimpl->goBusOn();
 }
 
 bool SLCanAdapter::goBusOff(){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return true;
+	return pimpl->goBusOff();
 }
 
 bool SLCanAdapter::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
-	return pimpl->write(aMsg);
+	return pimpl->sendMessage(aMsg, aTimeoutMs);
 }
 
 int SLCanAdapter::numReceivedMessagesAvailable(){
-	if(!pimpl->mIsOpen){
-		return(0);
-	}
-	return(pimpl->mRxBuf.available());
+	return pimpl->numReceivedMessagesAvailable();
 }
 
 bool SLCanAdapter::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return(pimpl->mRxBuf.pop(aMsg, aTimeoutMs));
+	return pimpl->getReceivedMessage(aMsg, aTimeoutMs);
 }
 
 int SLCanAdapter::numSentMessagesAvailable(){
-	if(!pimpl->mIsOpen){
-		return(0);
-	}
-	return(pimpl->mTxAckBuf.available());
+	return pimpl->numSentMessagesAvailable();
 }
 
 bool SLCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	if(!pimpl->mIsOpen){
-		return false;
-	}
-	return(pimpl->mTxAckBuf.pop(aMsg, aTimeoutMs));
+	return pimpl->getSentMessage(aMsg, aTimeoutMs);
 }
 
-enum CanAdapter::CanAdapterState  SLCanAdapter::getState(){
+enum CanAdapter::CanAdapterState SLCanAdapter::getState(){
 	return pimpl->getState();
 }
 
@@ -289,6 +276,10 @@ bool SLCanAdapter_p::setBaudRate(uint32_t aBaudrate){
 	}
 	mBaudrate = aBaudrate;
 	return true;
+}
+
+int SLCanAdapter_p::getNumberOfFilters(){
+	return(2);
 }
 
 bool SLCanAdapter_p::setAcceptanceFilter(int fid, uint32_t code, uint32_t mask, bool isExt){
@@ -429,6 +420,52 @@ bool SLCanAdapter_p::open(){
 		return false;
 	}
 	return true;
+}
+
+bool SLCanAdapter_p::goBusOn(){
+	if(!mIsOpen){
+		return false;
+	}
+	return true;
+}
+
+bool SLCanAdapter_p::goBusOff(){
+	if(!mIsOpen){
+		return false;
+	}
+	return true;
+}
+
+bool SLCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
+	return write(aMsg);
+}
+
+int SLCanAdapter_p::numReceivedMessagesAvailable(){
+	if(!mIsOpen){
+		return(0);
+	}
+	return(mRxBuf.available());
+}
+
+bool SLCanAdapter_p::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+	if(!mIsOpen){
+		return false;
+	}
+	return(mRxBuf.pop(aMsg, aTimeoutMs));
+}
+
+int SLCanAdapter_p::numSentMessagesAvailable(){
+	if(!mIsOpen){
+		return(0);
+	}
+	return(mTxAckBuf.available());
+}
+
+bool SLCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+	if(!mIsOpen){
+		return false;
+	}
+	return(mTxAckBuf.pop(aMsg, aTimeoutMs));
 }
 
 bool SLCanAdapter_p::write(SharedCanMessage aMsg){
