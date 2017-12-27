@@ -49,14 +49,13 @@ public:
 	SocketCanAdapter_p(std::string aChannelName, uint32_t aBaudrate);
 	virtual ~SocketCanAdapter_p();
 
-	bool toCanFrame(SharedCanMessage &aMsg, struct can_frame &aFrame);
-	bool fromCanFrame(struct can_frame &aFrame, SharedCanMessage &aMsg);
-
 	bool setParameter(std::string aKey, std::string aValue);
 	bool setBaudRate(uint32_t aBaudrate);
 	int getNumberOfFilters();
 	bool setAcceptanceFilter(int fid, uint32_t code, uint32_t mask, bool isExt);
 
+	bool open();
+	void close();
 	bool goBusOn();
 	bool goBusOff();
 
@@ -67,21 +66,21 @@ public:
 	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 
-	bool open();
-	void close();
+private:
+	bool toCanFrame(SharedCanMessage &aMsg, struct can_frame &aFrame);
+	bool fromCanFrame(struct can_frame &aFrame, SharedCanMessage &aMsg);
+
+	void doRead();
+	void readEnd(struct can_frame &aRxFrame, const boost::system::error_code& error, size_t bytes_transferred);
+	void doWrite();
+	void writeEnd(struct can_frame &aTxFrame, const boost::system::error_code& error);
+	void doClose();
 	bool write(SharedCanMessage aMsg);
 
 	boost::atomic_bool mIsOpen;
 	CanMessageBuffer mRxBuf;
 	CanMessageBuffer mTxBuf;
 	CanMessageBuffer mTxAckBuf;
-
-private:
-	void doRead();
-	void readEnd(struct can_frame &aRxFrame, const boost::system::error_code& error, size_t bytes_transferred);
-	void doWrite();
-	void writeEnd(struct can_frame &aTxFrame, const boost::system::error_code& error);
-	void doClose();
 
 	std::string mChannelName;
 
