@@ -27,8 +27,7 @@ Import('env')
 module_env = env.Clone();
  			
 if ((os.name == 'posix') and (platform.system() == 'Linux' )):  
-	module_env.Append(LINKFLAGS="-Wl,-rpath -Wl,build/lua/test") 
-#	module_env.Append(LINKFLAGS="-Wl,-rpath -Wl,\$${ORIGIN}")
+	module_env.Append(LINKFLAGS = ' -Wl,-rpath -Wl,\$${ORIGIN} ')
 		
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
 	module_env.Append(LINKFLAGS = ' -install_name @rpath/'+module_env.SharedLibNameExt('CanLua')+' ') 

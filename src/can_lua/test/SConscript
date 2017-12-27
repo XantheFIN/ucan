@@ -27,8 +27,8 @@ Import('env')
 test_env = env.Clone();
 
 if ((os.name == 'posix') and (platform.system() == 'Linux' )):  
-	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,build/lua/test") 
-#	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,\$${ORIGIN}")
+	test_env.Append(LIBS=['dl']);
+	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,\$${ORIGIN}")
 		
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
 	test_env.Append(LINKFLAGS = "-Wl,-rpath -Wl,@executable_path")

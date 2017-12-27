@@ -21,10 +21,11 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 
 #include <boost/scoped_ptr.hpp>
 
-#include "../can_dll/CanDllPort.hpp"
+#include "../can_dll/CanDllWrapper.hpp"
 #include "can_lua.h"
 
 static boost::scoped_ptr<CanDllWrapper> Can;
@@ -423,6 +424,19 @@ static const struct luaL_Reg mylib[]={
 
 int luaopen_CanLua(lua_State *L){
 	luaL_newlib(L, mylib);
+
+#if defined(SCONS_TARGET_WIN)
+   lua_pushstring(L, "Win");
+#elif defined(SCONS_TARGET_MAC)
+   lua_pushstring(L, "Mac");
+#elif defined(SCONS_TARGET_LINUX)
+   lua_pushstring(L, "Linux");
+#else
+#error Unsupported SCONS_TARGET
+#endif
+   lua_pushboolean(L, 1);
+   lua_settable(L, -3);
+
 	lua_pushstring(L, "Echo");
 	lua_pushnumber(L, 0);
 	lua_settable(L, -3);
@@ -460,7 +474,7 @@ int luaopen_CanLua(lua_State *L){
 
 int CANLUA_runScriptForHandle(const char *aFileName, int aHandle){
 	std::string fileNameString(aFileName);
-	std::ifstream t(fileNameString);
+	std::ifstream t(fileNameString.c_str());
 	std::string lua_script((std::istreambuf_iterator<char>(t)),
 	                 std::istreambuf_iterator<char>());
 	int error;
@@ -474,12 +488,14 @@ int CANLUA_runScriptForHandle(const char *aFileName, int aHandle){
     std::string cur_path = lua_tostring( L, -1 ); // grab path string from top of stack
 #if defined(SCONS_TARGET_WIN)
 #if _WIN64
-    cur_path.append(";./build/emu_lua/test/C5?-md_64.dll");
+    cur_path.append(";./build/can_lua/test/C5?-md_64.dll");
 #else
-    cur_path.append(";./build/emu_lua/test/C5?-md_32.dll");
+    cur_path.append(";./build/can_lua/test/C5?-md_32.dll");
 #endif
 #elif defined(SCONS_TARGET_MAC)
-    cur_path.append(";./build/emu_lua/test/libC5?.dylib");
+    cur_path.append(";./build/can_lua/test/libC5?.dylib");
+#elif defined(SCONS_TARGET_LINUX)
+    cur_path.append(";./build/can_lua/test/libC5?.so");
 #else
 #error Unsupported SCONS_TARGET
 #endif

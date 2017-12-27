@@ -33,7 +33,7 @@
 
 #include "../utils/LibName.h"
 
-#define C5_EMU_LUA_NAME LIB_NAME("CanLua")
+#define C5_CAN_LUA_NAME LIB_NAME("CanLua")
 
 class CanLuaWrapper_p;
 
@@ -94,16 +94,16 @@ public:
 	}
 
 	inline int loadDll(){
-		mHandle = LoadLibrary(C5_EMU_LUA_NAME);
+		mHandle = LoadLibrary(C5_CAN_LUA_NAME);
 		if (!mHandle){
-			printf("Load of EMU Library failed with error: %d \n", GetLastError());
+			printf("Load of CAN Library failed with error: %d \n", GetLastError());
 			CanLua_dispError(GetLastError());
 			return(-1);
 		} else {
 			mDllRunScriptFcn = (DllRunScriptFcn)GetProcAddress((HMODULE)mHandle, "CANLUA_runScript");
 			mDllRunScriptForHandleFcn = (DllRunScriptForHandleFcn)GetProcAddress((HMODULE)mHandle, "CANLUA_runScriptForHandle");
 			if(!allPointersAreNonNull()){
-				printf("Unable to obtain EMU function handles. Error: %d \n", GetLastError());
+				printf("Unable to obtain CAN function handles. Error: %d \n", GetLastError());
 				CanLua_dispError(GetLastError());
 				return(-2);
 			}
@@ -121,15 +121,15 @@ public:
 	}
 
 	inline int loadDll(){
-		mHandle = dlopen(C5_EMU_LUA_NAME, RTLD_LAZY);
+		mHandle = dlopen(C5_CAN_LUA_NAME, RTLD_LAZY);
 		if (!mHandle){
-			printf("Load of EMU Library failed with error: %s \n", dlerror());
+			printf("Load of CAN Library failed with error: %s \n", dlerror());
 			return(-1);
 		} else {
-			mDllRunScriptFcn = (DllRunScriptFcn)dlsym(mHandle, "CanLua_runScript");
-			mDllRunScriptForHandleFcn = (DllRunScriptForHandleFcn)dlsym(mHandle, "CanLua_runScriptForHandle");
+			mDllRunScriptFcn = (DllRunScriptFcn)dlsym(mHandle, "CANLUA_runScript");
+			mDllRunScriptForHandleFcn = (DllRunScriptForHandleFcn)dlsym(mHandle, "CANLUA_runScriptForHandle");
 			if(!allPointersAreNonNull()){
-				printf("Unable to obtain EMU function handles. Error: %s \n", dlerror());
+				printf("Unable to obtain CAN function handles. Error: %s \n", dlerror());
 				return(-2);
 			}
 		}

@@ -109,6 +109,7 @@ elif ((os.name == 'posix') and (platform.system() == 'Linux' )):
     'build/utils',
     'build/can',
     'build/can_dll',
+    'build/can_lua',
     'build/can_async',
 	'build/slcan_can',
     'build/socketcan_can'
@@ -119,6 +120,7 @@ elif ((os.name == 'posix') and (platform.system() == 'Darwin' )):
 	'build/utils',
 	'build/can',
 	'build/can_dll',
+    'build/can_lua',
 	'build/can_async',
 	'build/slcan_can'
 	]

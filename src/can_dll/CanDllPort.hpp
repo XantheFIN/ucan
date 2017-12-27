@@ -21,7 +21,9 @@
 #ifndef CAN_DLL_PORT_HPP_
 #define CAN_DLL_PORT_HPP_
 
+#ifdef SCONS_TARGET_WIN
 #include <windows.h>
+#endif
 #include <vector>
 
 #include "CanPort.h"
