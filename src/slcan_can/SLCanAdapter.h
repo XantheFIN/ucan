@@ -84,7 +84,7 @@ public:
 	int numSentMessagesAvailable();
 
 	/* Interface implementation */
-	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 
 	/* Interface implementation */
 	void close();

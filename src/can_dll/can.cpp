@@ -194,9 +194,9 @@ int CAN_numSentMessagesAvailable(int aHandle){
 	return Manager->adapter(aHandle)->numSentMessagesAvailable();
 }
 
-int CAN_getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs){
+int CAN_getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	SharedCanMessage msg;
-	if(!Manager->adapter(aHandle)->getSentMessage(msg, aTimeoutMs)){
+	if(!Manager->adapter(aHandle)->getSentMessage(msg, aTransactionId, aTimeoutMs)){
 		return(false);
 	}
 	aMsg->id = msg->getId();

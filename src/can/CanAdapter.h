@@ -118,20 +118,55 @@ public:
 	 */
 	virtual bool goBusOff() = 0;
 
-	/* Interface implementation */
+	/**
+	 * Send message.
+	 * Queues CAN message into transmit buffer. A transaction id is associated with
+	 * the pending transmission, and can be used in conjunction with getSentMessage()
+	 * to subsequently confirm a successful transmission.
+	 *
+	 * @param aMsg CAN message
+	 * @param aTransactionId id associated with transmission (set to nullptr if not used)
+	 * @return true if successful
+	 */
 	virtual bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId) = 0;
 
-	/* Interface implementation */
+	/**
+	 * Get number of messages in receive buffer.
+	 * Received messages are retrieved by means of getReceivedMessage().
+	 * @param number of messages in receive buffer
+	 */
 	virtual int numReceivedMessagesAvailable() = 0;
 
-	/* Interface implementation */
+	/**
+	 * Retrieve message from receive buffer.
+	 *
+	 * @param aMsg object to store received message
+	 * @param aTimeoutMs time to wait for received message
+	 * @return true when valid message is returned by function
+	 */
 	virtual bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs) = 0;
 
-	/* Interface implementation */
+	/**
+	 * Get number of successfully sent messages stored in transmit acknowledge buffer.
+	 * Messages transmitted are stored in the transmit acknowledge buffer and can
+	 * be retrieved my means of getSentMessage().
+	 * @param number of transmit acknowledge buffer
+	 */
 	virtual int numSentMessagesAvailable() = 0;
 
-	/* Interface implementation */
-	virtual bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs) = 0;
+	/**
+	 * Retrieve message from transmit acknowledge buffer.
+	 * If a non-zero transaction id is specified, the function will block until
+	 * the message corresponding to the transaction id as been transmitted, and
+	 * stored in the transmit acknowledge buffer, or until the specified timeout
+	 * expires.
+	 *
+	 * @param aMsg object to store transmitted message
+	 * @param aTransactionId desired transaction id
+	 * @param aTimeoutMs time to wait for received message
+	 * @return true when valid message is returned by function
+	 */
+	virtual bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs) = 0;
 
 	/**
 	 * Close interface.
@@ -144,13 +179,27 @@ public:
 	 */
 	virtual enum CanAdapterState getState() = 0;
 
-	/* Interface implementation */
+	/**
+	 *  Getter for error code corresponding to last error that occurred.
+	 *  Use getErrorDescription() to obtain textual description of error code.
+	 *  @return error code
+	 */
 	virtual int getErrorCode() = 0;
 
-	/* Interface implementation */
+	/**
+	 * Convert numerical error code to error description.
+	 *
+	 * @param aErrorCode error code obtained from getErrorCoder()
+	 * @param aErrorString textual error description
+	 * @param aSecondaryCode secondary error code (if applicable)
+	 */
 	virtual void getErrorDescription(int aErrorCode, std::string &aErrorString, int32_t *aSecondaryCode) = 0;
 
-	/* Interface implementation */
+	/**
+	 *  Return CAN error counters.
+	 *  @param aTxErrorCounter number of transmit errors
+	 *  @param aRxErrorCounter number of receive errors
+	 */
 	virtual void getErrorCounters(int *aTxErrorCounter, int *aRxErrorCounter) = 0;
 
 private:

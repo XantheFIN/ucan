@@ -70,7 +70,7 @@ public:
 	 * @param aTimeoutMs how long to wait if transmit acknowledge queue is empty
 	 * @return true of message successfully dequeued
 	 */
-	virtual bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs) = 0;
+	virtual bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs) = 0;
 
 	/**
 	 * Getter for error code

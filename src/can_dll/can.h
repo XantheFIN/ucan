@@ -82,7 +82,7 @@ DLLEXPORT int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTran
 DLLEXPORT int CAN_numReceivedMessagesAvailable(int aHandle);
 DLLEXPORT int CAN_getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
 DLLEXPORT int CAN_numSentMessagesAvailable(int aHandle);
-DLLEXPORT int CAN_getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
+DLLEXPORT int CAN_getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 DLLEXPORT void CAN_close(int aHandle);
 
 DLLEXPORT int CAN_getState(int aHandle);

@@ -71,7 +71,7 @@ public:
 	int numReceivedMessagesAvailable();
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 	int numSentMessagesAvailable();
-	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 	enum CanAdapter::CanAdapterState getState();
 
 private:
@@ -188,8 +188,8 @@ int SLCanAdapter::numSentMessagesAvailable(){
 	return pimpl->numSentMessagesAvailable();
 }
 
-bool SLCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	return pimpl->getSentMessage(aMsg, aTimeoutMs);
+bool SLCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+	return pimpl->getSentMessage(aMsg, aTransactionId, aTimeoutMs);
 }
 
 enum CanAdapter::CanAdapterState SLCanAdapter::getState(){
@@ -472,7 +472,7 @@ int SLCanAdapter_p::numSentMessagesAvailable(){
 	return(mTxAckBuf.available());
 }
 
-bool SLCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+bool SLCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	if(!mIsOpen){
 		return false;
 	}

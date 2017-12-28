@@ -51,7 +51,7 @@ public:
 	int numSentMessagesAvailable();
 
 	/* Interface implementation */
-	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 
 	/* Interface implementation */
 	int getErrorCode();
@@ -110,9 +110,9 @@ inline int CanDllPort::numSentMessagesAvailable(){
 	return mWrapper->numSentMessagesAvailable(mHandle);
 }
 
-inline bool CanDllPort::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+inline bool CanDllPort::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	CAN_CanMessage msgS;
-	if(mWrapper->getSentMessage(mHandle, &msgS, aTimeoutMs) == 0){
+	if(mWrapper->getSentMessage(mHandle, &msgS, aTransactionId, aTimeoutMs) == 0){
 		return false;
 	}
 

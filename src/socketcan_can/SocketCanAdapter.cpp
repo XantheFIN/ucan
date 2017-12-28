@@ -63,7 +63,7 @@ public:
 
 	int numReceivedMessagesAvailable();
 	int numSentMessagesAvailable();
-	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
+	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 
 private:
@@ -161,8 +161,8 @@ int SocketCanAdapter::numSentMessagesAvailable(){
 	return pimpl->numSentMessagesAvailable();
 }
 
-bool SocketCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
-	return pimpl->getSentMessage(aMsg, aTimeoutMs);
+bool SocketCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+	return pimpl->getSentMessage(aMsg, aTransactionId, aTimeoutMs);
 }
 
 void SocketCanAdapter::close(){
@@ -345,7 +345,7 @@ int SocketCanAdapter_p::numSentMessagesAvailable(){
 	return mTxAckBuf.available();
 }
 
-bool SocketCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){
+bool SocketCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	if(!mIsOpen){
 		return false;
 	}

@@ -66,7 +66,7 @@ public:
 	int numReceivedMessagesAvailable(int aHandle);
 	int getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
 	int numSentMessagesAvailable(int aHandle);
-	int getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
+	int getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 
 	void close(int aHandle);
 	int getState(int aHandle);
@@ -118,7 +118,7 @@ class CanDllWrapper_p {
 	typedef int (*DllNumReceivedMessagesAvailableFcn)(int);
 	typedef int (*DllGetReceivedMessageFcn)(int, CAN_CanMessage*, int);
 	typedef int (*DllNumSentMessagesAvailableFcn)(int);
-	typedef int (*DllGetSentMessageFcn)(int, CAN_CanMessage*, int);
+	typedef int (*DllGetSentMessageFcn)(int, CAN_CanMessage*, uint16_t, int);
 	typedef void (*DllCloseFcn)(int);
 
 	typedef int (*DllGetStateFcn)(int);
@@ -440,8 +440,8 @@ inline int CanDllWrapper::numSentMessagesAvailable(int aHandle){
 	return pimpl->getNumSentMessagesAvailableFcn()(aHandle);
 }
 
-inline int CanDllWrapper::getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs){
-	return pimpl->getGetSentMessageFcn()(aHandle, aMsg, aTimeoutMs);
+inline int CanDllWrapper::getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+	return pimpl->getGetSentMessageFcn()(aHandle, aMsg, aTransactionId, aTimeoutMs);
 }
 
 inline void CanDllWrapper::close(int aHandle){

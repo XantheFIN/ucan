@@ -155,7 +155,7 @@ public:
 				{
 					boost::system::error_code ec;
 					SharedCanMessage ndu;
-					if(impl->getSentMessage(ndu, 100)){
+					if(impl->getSentMessage(ndu, 0, 100)){
 						this->io_service_.post(boost::asio::detail::bind_handler(
 								handler_, ec, ndu));
 						keepTrying = false;

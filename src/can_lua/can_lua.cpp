@@ -340,7 +340,7 @@ static int l_get_sent_message(lua_State *L){
 	uint32_t timeout = luaL_checkinteger(L, 2);
 
 	CAN_CanMessage m;
-	if(!Can->getSentMessage(h, &m, timeout)){
+	if(!Can->getSentMessage(h, &m, 0, timeout)){
 		lua_pushnil(L);
 		return 1;
 	}
