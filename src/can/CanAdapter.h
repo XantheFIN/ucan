@@ -119,7 +119,7 @@ public:
 	virtual bool goBusOff() = 0;
 
 	/* Interface implementation */
-	virtual bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs) = 0;
+	virtual bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId) = 0;
 
 	/* Interface implementation */
 	virtual int numReceivedMessagesAvailable() = 0;

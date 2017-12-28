@@ -92,10 +92,10 @@ bool CanAsyncWrapper::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeo
 	return pimpl->mCan->getReceivedMessage(aMsg, aTimeoutMs);
 }
 
-bool CanAsyncWrapper::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
+bool CanAsyncWrapper::sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId){
     if(!pimpl->mPortIsOpen){
     	return false;
     }
-	return pimpl->mCan->sendMessage(aMsg, aTimeoutMs);
+	return pimpl->mCan->sendMessage(aMsg, aTransactionId);
 }
 

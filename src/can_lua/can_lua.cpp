@@ -326,7 +326,8 @@ static int l_send_message(lua_State *L){
 		m.data[i] = b;
 	}
 
-	lua_pushboolean(L, Can->sendMessage(h, &m, 0));
+	uint16_t transactionId;
+	lua_pushboolean(L, Can->sendMessage(h, &m, &transactionId));
 	return 1;
 }
 

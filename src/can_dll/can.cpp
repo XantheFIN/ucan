@@ -157,7 +157,7 @@ int CAN_goBusOff(int aHandle){
 	return Manager->adapter(aHandle)->goBusOff();
 }
 
-int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs){
+int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTransactionId){
 	if(aMsg->flags & CAN_FLAG_IS_REMOTE_FRAME){
 		// don't know what to do with this
 		return(false);
@@ -166,7 +166,7 @@ int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs){
 	for(int i=0; i<aMsg->len; i++){
 		msg->setData(i, aMsg->data[i]);
 	}
-	return Manager->adapter(aHandle)->sendMessage(msg, aTimeoutMs);
+	return Manager->adapter(aHandle)->sendMessage(msg, aTransactionId);
 }
 
 int CAN_numReceivedMessagesAvailable(int aHandle){

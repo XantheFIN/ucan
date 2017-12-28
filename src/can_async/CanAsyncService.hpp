@@ -66,8 +66,9 @@ public:
 		impl->close();
 	}
 
-	bool sendMessage(implementation_type &impl, const SharedCanMessage &aMsg, uint32_t aTimeoutMs){
-		return impl->sendMessage(aMsg, aTimeoutMs);
+	bool sendMessage(implementation_type &impl, const SharedCanMessage &aMsg){
+		uint16_t transactionId;
+		return impl->sendMessage(aMsg, &transactionId);
 	}
 
 	bool getReceivedMessage(implementation_type &impl, SharedCanMessage &aMsg, uint32_t aTimeoutMs){

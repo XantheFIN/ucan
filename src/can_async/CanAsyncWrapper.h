@@ -39,7 +39,7 @@ public:
 
 	bool getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
-    bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs);
+    bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId);
 
 private:
 	// make uncopyable (we only want to use shared pointers

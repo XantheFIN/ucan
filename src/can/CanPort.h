@@ -42,7 +42,7 @@ public:
 	 * @param aTimeoutMs how long to wait if transmit queue is full
 	 * @return true if successfully queued
 	 */
-	virtual bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs) = 0;
+	virtual bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId) = 0;
 
 	/**
 	 * Returns number of messages in receive buffer.

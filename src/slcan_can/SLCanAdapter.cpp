@@ -67,7 +67,7 @@ public:
 	void close();
 	bool goBusOn();
 	bool goBusOff();
-	bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs);
+	bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId);
 	int numReceivedMessagesAvailable();
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 	int numSentMessagesAvailable();
@@ -75,7 +75,6 @@ public:
 	enum CanAdapter::CanAdapterState getState();
 
 private:
-	bool write(SharedCanMessage aMsg);
 	bool sendCommand(std::string aCommand, std::string &aReponse);
 	bool getSetBaudrateCmd(uint32_t aBaudrate, std::string &aBaudrateCmd);
 	void getSetFilterCmds(uint16_t aAc01, uint16_t aAc23, uint16_t aAm01, uint16_t aAm23, std::string &aCodeCmd, std::string &aMaskCmd);
@@ -173,8 +172,8 @@ bool SLCanAdapter::goBusOff(){
 	return pimpl->goBusOff();
 }
 
-bool SLCanAdapter::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
-	return pimpl->sendMessage(aMsg, aTimeoutMs);
+bool SLCanAdapter::sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId){
+	return pimpl->sendMessage(aMsg, aTransactionId);
 }
 
 int SLCanAdapter::numReceivedMessagesAvailable(){
@@ -432,8 +431,22 @@ bool SLCanAdapter_p::goBusOff(){
 	return true;
 }
 
-bool SLCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
-	return write(aMsg);
+bool SLCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId){
+	if(!mIsOpen){
+		return false;
+	}
+
+	std::string req, rsp;
+	encode(aMsg, req);
+	if(!sendCommand(req, rsp)){
+		return false;
+	}
+
+	// transaction ID not yet implememted
+	aTransactionId = 0;
+	// acknowledge transmit
+	mTxAckBuf.push(CanMessage::getSharedInstance(aMsg), 0);
+	return true;
 }
 
 int SLCanAdapter_p::numReceivedMessagesAvailable(){
@@ -462,22 +475,6 @@ bool SLCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs)
 		return false;
 	}
 	return(mTxAckBuf.pop(aMsg, aTimeoutMs));
-}
-
-bool SLCanAdapter_p::write(SharedCanMessage aMsg){
-	if(!mIsOpen){
-		return false;
-	}
-
-	std::string req, rsp;
-	encode(aMsg, req);
-
-	if(!sendCommand(req, rsp)){
-		return false;
-	}
-
-	mTxAckBuf.push(aMsg, 0);
-	return true;
 }
 
 enum CanAdapter::CanAdapterState SLCanAdapter_p::getState(){

@@ -62,7 +62,7 @@ public:
 	int open(int aHandle);
 	int goBusOn(int aHandle);
 	int goBusOff(int aHandle);
-	int sendMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
+	int sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTransactionId);
 	int numReceivedMessagesAvailable(int aHandle);
 	int getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
 	int numSentMessagesAvailable(int aHandle);
@@ -114,7 +114,7 @@ class CanDllWrapper_p {
 	typedef int (*DllOpenFcn)(int);
 	typedef int (*DllGoBusOnFcn)(int);
 	typedef int (*DllGoBusOffFcn)(int);
-	typedef int (*DllSendMessageFcn)(int, CAN_CanMessage*, int);
+	typedef int (*DllSendMessageFcn)(int, CAN_CanMessage*, uint16_t *);
 	typedef int (*DllNumReceivedMessagesAvailableFcn)(int);
 	typedef int (*DllGetReceivedMessageFcn)(int, CAN_CanMessage*, int);
 	typedef int (*DllNumSentMessagesAvailableFcn)(int);
@@ -424,8 +424,8 @@ inline int CanDllWrapper::goBusOff(int aHandle){
 	return pimpl->getGoBusOffFcn()(aHandle);
 }
 
-inline int CanDllWrapper::sendMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs){
-	return pimpl->getSendMessageFcn()(aHandle, aMsg, aTimeoutMs);
+inline int CanDllWrapper::sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTransactionId){
+	return pimpl->getSendMessageFcn()(aHandle, aMsg, aTransactionId);
 }
 
 inline int CanDllWrapper::numReceivedMessagesAvailable(int aHandle){

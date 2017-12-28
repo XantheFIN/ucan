@@ -59,7 +59,7 @@ public:
 	bool goBusOn();
 	bool goBusOff();
 
-	bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs);
+	bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId);
 
 	int numReceivedMessagesAvailable();
 	int numSentMessagesAvailable();
@@ -145,8 +145,8 @@ bool SocketCanAdapter::goBusOff(){
 	return pimpl->goBusOff();
 }
 
-bool SocketCanAdapter::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
-	return pimpl->sendMessage(aMsg, aTimeoutMs);
+bool SocketCanAdapter::sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId){
+	return pimpl->sendMessage(aMsg, aTransactionId);
 }
 
 int SocketCanAdapter::numReceivedMessagesAvailable(){
@@ -306,7 +306,7 @@ bool SocketCanAdapter_p::goBusOff(){
 	return true;
 }
 
-bool SocketCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){
+bool SocketCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId){
 	if(!mIsOpen){
 		return false;
 	}
@@ -315,6 +315,8 @@ bool SocketCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs)
 		return false;
 	}
 
+	// transaction ID not yet implememted
+	aTransactionId = 0;
 	// acknowledge transmit
 	mTxAckBuf.push(CanMessage::getSharedInstance(aMsg), 0);
 	return true;

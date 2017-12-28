@@ -52,7 +52,7 @@ public:
 	bool goBusOff(){ return false; };
 
 	/* Interface implementation */
-	bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs){ return false; };
+	bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId){ return false; };
 
 	/* Interface implementation */
 	int numReceivedMessagesAvailable(){ return 0; };

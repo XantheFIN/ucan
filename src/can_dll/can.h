@@ -78,7 +78,7 @@ DLLEXPORT int CAN_setAcceptanceFilter(int aHandle, int aFid, uint32_t aCode, uin
 DLLEXPORT int CAN_open(int aHandle);
 DLLEXPORT int CAN_goBusOn(int aHandle);
 DLLEXPORT int CAN_goBusOff(int aHandle);
-DLLEXPORT int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
+DLLEXPORT int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTransactionId);
 DLLEXPORT int CAN_numReceivedMessagesAvailable(int aHandle);
 DLLEXPORT int CAN_getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
 DLLEXPORT int CAN_numSentMessagesAvailable(int aHandle);

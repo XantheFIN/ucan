@@ -43,8 +43,8 @@ public:
 		this->service.close(this->implementation);
 	}
 
-	bool sendMessage(const SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){
-		return this->service.sendMessage(this->implementation, aMsg, aTimeoutMs);
+	bool sendMessage(const SharedCanMessage &aMsg){
+		return this->service.sendMessage(this->implementation, aMsg);
 	}
 
 	bool getReceivedMessage(SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){

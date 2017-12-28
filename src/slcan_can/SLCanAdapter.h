@@ -72,7 +72,7 @@ public:
 	bool goBusOff();
 
 	/* Interface implementation */
-	bool sendMessage(SharedCanMessage aMsg, uint32_t aTimeoutMs);
+	bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId);
 
 	/* Interface implementation */
 	int numReceivedMessagesAvailable();
