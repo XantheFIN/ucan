@@ -65,8 +65,8 @@ public:
 	int sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTransactionId);
 	int numReceivedMessagesAvailable(int aHandle);
 	int getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
-	int numSentMessagesAvailable(int aHandle);
-	int getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
+	int numSendAcknMessagesAvailable(int aHandle);
+	int getSendAcknMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 
 	void close(int aHandle);
 	int getState(int aHandle);
@@ -117,8 +117,8 @@ class CanDllWrapper_p {
 	typedef int (*DllSendMessageFcn)(int, CAN_CanMessage*, uint16_t *);
 	typedef int (*DllNumReceivedMessagesAvailableFcn)(int);
 	typedef int (*DllGetReceivedMessageFcn)(int, CAN_CanMessage*, int);
-	typedef int (*DllNumSentMessagesAvailableFcn)(int);
-	typedef int (*DllGetSentMessageFcn)(int, CAN_CanMessage*, uint16_t, int);
+	typedef int (*DllNumSendAcknMessagesAvailableFcn)(int);
+	typedef int (*DllGetSendAcknMessageFcn)(int, CAN_CanMessage*, uint16_t, int);
 	typedef void (*DllCloseFcn)(int);
 
 	typedef int (*DllGetStateFcn)(int);
@@ -155,8 +155,8 @@ public:
 	inline DllSendMessageFcn getSendMessageFcn() const { return mSendMessageFcn; }
 	inline DllNumReceivedMessagesAvailableFcn getNumReceivedMessagesAvailableFcn() const { return mNumReceivedMessagesAvailableFcn; }
 	inline DllGetReceivedMessageFcn getGetReceivedMessageFcn() const { return mGetReceivedMessageFcn; }
-	inline DllNumSentMessagesAvailableFcn getNumSentMessagesAvailableFcn() const { return mNumSentMessagesAvailableFcn; }
-	inline DllGetSentMessageFcn getGetSentMessageFcn() const { return mGetSentMessageFcn; }
+	inline DllNumSendAcknMessagesAvailableFcn getNumSendAcknMessagesAvailableFcn() const { return mNumSendAcknMessagesAvailableFcn; }
+	inline DllGetSendAcknMessageFcn getGetSendAcknMessageFcn() const { return mGetSendAcknMessageFcn; }
 	inline DllCloseFcn getCloseFcn() const { return mCloseFcn; }
 
 	inline DllGetStateFcn getGetStateFcn() const { return mDllGetStateFcn; }
@@ -189,8 +189,8 @@ private:
 	DllSendMessageFcn mSendMessageFcn;
 	DllNumReceivedMessagesAvailableFcn mNumReceivedMessagesAvailableFcn;
 	DllGetReceivedMessageFcn mGetReceivedMessageFcn;
-	DllNumSentMessagesAvailableFcn mNumSentMessagesAvailableFcn;
-	DllGetSentMessageFcn mGetSentMessageFcn;
+	DllNumSendAcknMessagesAvailableFcn mNumSendAcknMessagesAvailableFcn;
+	DllGetSendAcknMessageFcn mGetSendAcknMessageFcn;
 	DllCloseFcn mCloseFcn;
 
 	DllGetStateFcn mDllGetStateFcn;
@@ -245,8 +245,8 @@ inline int CanDllWrapper_p::loadDll(){
 		mSendMessageFcn = (DllSendMessageFcn)GetProcAddress((HMODULE)mHandle, "CAN_sendMessage");
 		mNumReceivedMessagesAvailableFcn = (DllNumReceivedMessagesAvailableFcn)GetProcAddress((HMODULE)mHandle, "CAN_numReceivedMessagesAvailable");
 		mGetReceivedMessageFcn = (DllGetReceivedMessageFcn)GetProcAddress((HMODULE)mHandle, "CAN_getReceivedMessage");
-		mNumSentMessagesAvailableFcn = (DllNumSentMessagesAvailableFcn)GetProcAddress((HMODULE)mHandle, "CAN_numSentMessagesAvailable");
-		mGetSentMessageFcn = (DllGetSentMessageFcn)GetProcAddress((HMODULE)mHandle, "CAN_getSentMessage");
+		mNumSendAcknMessagesAvailableFcn = (DllNumSendAcknMessagesAvailableFcn)GetProcAddress((HMODULE)mHandle, "CAN_numSendAcknMessagesAvailable");
+		mGetSendAcknMessageFcn = (DllGetSendAcknMessageFcn)GetProcAddress((HMODULE)mHandle, "CAN_getSendAcknMessage");
 		mCloseFcn = (DllCloseFcn)GetProcAddress((HMODULE)mHandle, "CAN_close");
 
 		mDllGetStateFcn = (DllGetStateFcn)GetProcAddress((HMODULE)mHandle, "CAN_getState");
@@ -300,8 +300,8 @@ inline int CanDllWrapper_p::loadDll(){
 		mSendMessageFcn = (DllSendMessageFcn)dlsym(mHandle, "CAN_sendMessage");
 		mNumReceivedMessagesAvailableFcn = (DllNumReceivedMessagesAvailableFcn)dlsym(mHandle, "CAN_numReceivedMessagesAvailable");
 		mGetReceivedMessageFcn = (DllGetReceivedMessageFcn)dlsym(mHandle, "CAN_getReceivedMessage");
-		mNumSentMessagesAvailableFcn = (DllNumSentMessagesAvailableFcn)dlsym(mHandle, "CAN_numSentMessagesAvailable");
-		mGetSentMessageFcn = (DllGetSentMessageFcn)dlsym(mHandle, "CAN_getSentMessage");
+		mNumSendAcknMessagesAvailableFcn = (DllNumSendAcknMessagesAvailableFcn)dlsym(mHandle, "CAN_numSendAcknMessagesAvailable");
+		mGetSendAcknMessageFcn = (DllGetSendAcknMessageFcn)dlsym(mHandle, "CAN_getSendAcknMessage");
 		mCloseFcn = (DllCloseFcn)dlsym(mHandle, "CAN_close");
 
 		mDllGetStateFcn = (DllGetStateFcn)dlsym(mHandle, "CAN_getState");
@@ -341,8 +341,8 @@ inline int CanDllWrapper_p::allPointersAreNonNull() {
 			(mSendMessageFcn != NULL) &&
 			(mNumReceivedMessagesAvailableFcn != NULL) &&
 			(mGetReceivedMessageFcn != NULL) &&
-			(mNumSentMessagesAvailableFcn != NULL) &&
-			(mGetSentMessageFcn != NULL) &&
+			(mNumSendAcknMessagesAvailableFcn != NULL) &&
+			(mGetSendAcknMessageFcn != NULL) &&
 			(mCloseFcn != NULL) &&
 
 			(mDllGetStateFcn != NULL) &&
@@ -436,12 +436,12 @@ inline int CanDllWrapper::getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, 
 	return pimpl->getGetReceivedMessageFcn()(aHandle, aMsg,aTimeoutMs);
 }
 
-inline int CanDllWrapper::numSentMessagesAvailable(int aHandle){
-	return pimpl->getNumSentMessagesAvailableFcn()(aHandle);
+inline int CanDllWrapper::numSendAcknMessagesAvailable(int aHandle){
+	return pimpl->getNumSendAcknMessagesAvailableFcn()(aHandle);
 }
 
-inline int CanDllWrapper::getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
-	return pimpl->getGetSentMessageFcn()(aHandle, aMsg, aTransactionId, aTimeoutMs);
+inline int CanDllWrapper::getSendAcknMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+	return pimpl->getGetSendAcknMessageFcn()(aHandle, aMsg, aTransactionId, aTimeoutMs);
 }
 
 inline void CanDllWrapper::close(int aHandle){

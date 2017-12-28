@@ -62,8 +62,8 @@ public:
 	bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId);
 
 	int numReceivedMessagesAvailable();
-	int numSentMessagesAvailable();
-	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
+	int numSendAcknMessagesAvailable();
+	bool getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 
 private:
@@ -157,12 +157,12 @@ bool SocketCanAdapter::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTime
 	return pimpl->getReceivedMessage(aMsg, aTimeoutMs);
 }
 
-int SocketCanAdapter::numSentMessagesAvailable(){
-	return pimpl->numSentMessagesAvailable();
+int SocketCanAdapter::numSendAcknMessagesAvailable(){
+	return pimpl->numSendAcknMessagesAvailable();
 }
 
-bool SocketCanAdapter::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
-	return pimpl->getSentMessage(aMsg, aTransactionId, aTimeoutMs);
+bool SocketCanAdapter::getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+	return pimpl->getSendAcknMessage(aMsg, aTransactionId, aTimeoutMs);
 }
 
 void SocketCanAdapter::close(){
@@ -338,14 +338,14 @@ bool SocketCanAdapter_p::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTi
 	return mRxBuf.pop(aMsg, aTimeoutMs);
 }
 
-int SocketCanAdapter_p::numSentMessagesAvailable(){
+int SocketCanAdapter_p::numSendAcknMessagesAvailable(){
 	if(!mIsOpen){
 		return(0);
 	}
 	return mTxAckBuf.available();
 }
 
-bool SocketCanAdapter_p::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+bool SocketCanAdapter_p::getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	if(!mIsOpen){
 		return false;
 	}

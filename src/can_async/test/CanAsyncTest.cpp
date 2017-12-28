@@ -42,7 +42,7 @@ bool CanAsyncTest::start(SharedCanAdapter CanAdapter){
 	}
 	mIsOpen = true;
 	mCloseAfterRxReq = false;
-	mClient.asyncGetSentMessage(boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
+	mClient.asyncGetSendAcknMessage(boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
 	mClient.asyncGetReceivedMessage(boost::bind(&CanAsyncTest::handleReceive, this, _1, _2));
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &mIo));
 	mBackgroundThread.swap(t);
@@ -91,7 +91,7 @@ void CanAsyncTest::handleSendEnd(const boost::system::error_code &ec, SharedCanM
 		// most likely this means that operation has been cancelled
 	} else {
 	    std::cout << "CAN msg sent: " << aMsg << " - @" << aMsg->getTimeStamp() << std::endl << std::flush;;
-	    mClient.asyncGetSentMessage(boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
+	    mClient.asyncGetSendAcknMessage(boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
 	}
 }
 

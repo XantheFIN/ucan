@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#define CAN_DLL_VERSION 0x0030 // 0.3
+#define CAN_DLL_VERSION 0x0040 // 0.4
 
 #define CAN_FLAG_IS_EXTENDED 0x0001
 #define CAN_FLAG_IS_REMOTE_FRAME 0x0002
@@ -81,8 +81,8 @@ DLLEXPORT int CAN_goBusOff(int aHandle);
 DLLEXPORT int CAN_sendMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t *aTransactionId);
 DLLEXPORT int CAN_numReceivedMessagesAvailable(int aHandle);
 DLLEXPORT int CAN_getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutMs);
-DLLEXPORT int CAN_numSentMessagesAvailable(int aHandle);
-DLLEXPORT int CAN_getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
+DLLEXPORT int CAN_numSendAcknMessagesAvailable(int aHandle);
+DLLEXPORT int CAN_getSendAcknMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 DLLEXPORT void CAN_close(int aHandle);
 
 DLLEXPORT int CAN_getState(int aHandle);

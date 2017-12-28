@@ -190,13 +190,13 @@ int CAN_getReceivedMessage(int aHandle, CAN_CanMessage *aMsg, uint32_t aTimeoutM
 	return(true);
 }
 
-int CAN_numSentMessagesAvailable(int aHandle){
-	return Manager->adapter(aHandle)->numSentMessagesAvailable();
+int CAN_numSendAcknMessagesAvailable(int aHandle){
+	return Manager->adapter(aHandle)->numSendAcknMessagesAvailable();
 }
 
-int CAN_getSentMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+int CAN_getSendAcknMessage(int aHandle, CAN_CanMessage *aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	SharedCanMessage msg;
-	if(!Manager->adapter(aHandle)->getSentMessage(msg, aTransactionId, aTimeoutMs)){
+	if(!Manager->adapter(aHandle)->getSendAcknMessage(msg, aTransactionId, aTimeoutMs)){
 		return(false);
 	}
 	aMsg->id = msg->getId();

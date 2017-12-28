@@ -48,10 +48,10 @@ public:
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
 
 	/* Interface implementation */
-	int numSentMessagesAvailable();
+	int numSendAcknMessagesAvailable();
 
 	/* Interface implementation */
-	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
+	bool getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 
 	/* Interface implementation */
 	int getErrorCode();
@@ -106,13 +106,13 @@ inline bool CanDllPort::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTim
 	return true;
 }
 
-inline int CanDllPort::numSentMessagesAvailable(){
-	return mWrapper->numSentMessagesAvailable(mHandle);
+inline int CanDllPort::numSendAcknMessagesAvailable(){
+	return mWrapper->numSendAcknMessagesAvailable(mHandle);
 }
 
-inline bool CanDllPort::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+inline bool CanDllPort::getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
 	CAN_CanMessage msgS;
-	if(mWrapper->getSentMessage(mHandle, &msgS, aTransactionId, aTimeoutMs) == 0){
+	if(mWrapper->getSendAcknMessage(mHandle, &msgS, aTransactionId, aTimeoutMs) == 0){
 		return false;
 	}
 

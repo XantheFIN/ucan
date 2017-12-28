@@ -121,7 +121,7 @@ public:
 	/**
 	 * Send message.
 	 * Queues CAN message into transmit buffer. A transaction id is associated with
-	 * the pending transmission, and can be used in conjunction with getSentMessage()
+	 * the pending transmission, and can be used in conjunction with getSendAcknMessage()
 	 * to subsequently confirm a successful transmission.
 	 *
 	 * @param aMsg CAN message
@@ -149,10 +149,10 @@ public:
 	/**
 	 * Get number of successfully sent messages stored in transmit acknowledge buffer.
 	 * Messages transmitted are stored in the transmit acknowledge buffer and can
-	 * be retrieved my means of getSentMessage().
+	 * be retrieved my means of getSendAcknMessage().
 	 * @param number of transmit acknowledge buffer
 	 */
-	virtual int numSentMessagesAvailable() = 0;
+	virtual int numSendAcknMessagesAvailable() = 0;
 
 	/**
 	 * Retrieve message from transmit acknowledge buffer.
@@ -166,7 +166,7 @@ public:
 	 * @param aTimeoutMs time to wait for received message
 	 * @return true when valid message is returned by function
 	 */
-	virtual bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs) = 0;
+	virtual bool getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs) = 0;
 
 	/**
 	 * Close interface.

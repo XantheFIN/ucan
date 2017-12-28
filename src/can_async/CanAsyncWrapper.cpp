@@ -78,11 +78,11 @@ void CanAsyncWrapper::close(){
     pimpl->mCan.reset(); // don't hold on to pointer
 }
 
-bool CanAsyncWrapper::getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
+bool CanAsyncWrapper::getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){
     if(!pimpl->mPortIsOpen){
     	return false;
     }
-	return pimpl->mCan->getSentMessage(aMsg, aTransactionId, aTimeoutMs);
+	return pimpl->mCan->getSendAcknMessage(aMsg, aTransactionId, aTimeoutMs);
 }
 
 bool CanAsyncWrapper::getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){

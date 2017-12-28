@@ -276,7 +276,7 @@ static int l_num_sent_messages_available(lua_State *L){
 	// first argument must be handle
 	int h = luaL_checkinteger(L, 1);
 
-	lua_pushnumber(L, Can->numSentMessagesAvailable(h));
+	lua_pushnumber(L, Can->numSendAcknMessagesAvailable(h));
 	return 1;
 }
 
@@ -340,7 +340,7 @@ static int l_get_sent_message(lua_State *L){
 	uint32_t timeout = luaL_checkinteger(L, 2);
 
 	CAN_CanMessage m;
-	if(!Can->getSentMessage(h, &m, 0, timeout)){
+	if(!Can->getSendAcknMessage(h, &m, 0, timeout)){
 		lua_pushnil(L);
 		return 1;
 	}

@@ -61,10 +61,10 @@ public:
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs){ return false; };
 
 	/* Interface implementation */
-	int numSentMessagesAvailable(){ return 0; };
+	int numSendAcknMessagesAvailable(){ return 0; };
 
 	/* Interface implementation */
-	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){ return false; };
+	bool getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs){ return false; };
 
 	/* Interface implementation */
 	void close(){ return; };

@@ -37,7 +37,7 @@ public:
 	void close();
 	bool isOpen();
 
-	bool getSentMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
+	bool getSendAcknMessage(SharedCanMessage& aMsg, uint16_t aTransactionId, uint32_t aTimeoutMs);
 	bool getReceivedMessage(SharedCanMessage& aMsg, uint32_t aTimeoutMs);
     bool sendMessage(SharedCanMessage aMsg, uint16_t *aTransactionId);
 

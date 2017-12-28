@@ -51,8 +51,8 @@ public:
 		return this->service.getReceivedMessage(this->implementation, aMsg, aTimeoutMs);
 	}
 
-	bool getSentMessage(SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){
-		return this->service.getSentMessage(this->implementation, aMsg, aTimeoutMs);
+	bool getSendAcknMessage(SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){
+		return this->service.getSendAcknMessage(this->implementation, aMsg, aTimeoutMs);
 	}
 
 	template <typename Handler>
@@ -62,9 +62,9 @@ public:
 	}
 
 	template <typename Handler>
-	void asyncGetSentMessage(Handler handler)
+	void asyncGetSendAcknMessage(Handler handler)
 	{
-		this->service.asyncGetSentMessage(this->implementation, handler);
+		this->service.asyncGetSendAcknMessage(this->implementation, handler);
 	}
 };
 

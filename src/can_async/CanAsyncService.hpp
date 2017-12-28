@@ -75,8 +75,8 @@ public:
 		return impl->getReceivedMessage(aMsg, aTimeoutMs);
 	}
 
-	bool getSentMessage(implementation_type &impl, SharedCanMessage &aMsg, uint32_t aTimeoutMs){
-		return impl->getSentMessage(aMsg, aTimeoutMs);
+	bool getSendAcknMessage(implementation_type &impl, SharedCanMessage &aMsg, uint32_t aTimeoutMs){
+		return impl->getSendAcknMessage(aMsg, aTimeoutMs);
 	}
 
 	template <typename Handler>
@@ -133,10 +133,10 @@ public:
 	}
 
 	template <typename Handler>
-	class GetSentMessageOperation
+	class GetSendAcknMessageOperation
 	{
 	public:
-		GetSentMessageOperation(implementation_type &impl,
+		GetSendAcknMessageOperation(implementation_type &impl,
 				boost::asio::io_service &io_service,
 				Handler handler)
 		: impl_(impl),
@@ -155,7 +155,7 @@ public:
 				{
 					boost::system::error_code ec;
 					SharedCanMessage ndu;
-					if(impl->getSentMessage(ndu, 0, 100)){
+					if(impl->getSendAcknMessage(ndu, 0, 100)){
 						this->io_service_.post(boost::asio::detail::bind_handler(
 								handler_, ec, ndu));
 						keepTrying = false;
@@ -179,9 +179,9 @@ public:
 	};
 
 	template <typename Handler>
-	void asyncGetSentMessage(implementation_type &impl, Handler handler)
+	void asyncGetSendAcknMessage(implementation_type &impl, Handler handler)
 	{
-		this->async_io_service_2_.post(GetSentMessageOperation<Handler>(impl,
+		this->async_io_service_2_.post(GetSendAcknMessageOperation<Handler>(impl,
 				this->get_io_service(), handler));
 	}
 
