@@ -315,8 +315,10 @@ bool SocketCanAdapter_p::sendMessage(SharedCanMessage aMsg, uint16_t *aTransacti
 		return false;
 	}
 
-	// transaction ID not yet implememted
-	aTransactionId = 0;
+	// transaction ID not yet implemented
+	if(aTransactionId != 0){
+		*aTransactionId = 0;
+	}
 	// acknowledge transmit
 	mTxAckBuf.push(CanMessage::getSharedInstance(aMsg), 0);
 	return true;

@@ -88,7 +88,8 @@ int main(int argc, char* argv[]) {
 	m1.data[6] = 0xFF;
 	m1.data[7] = 0xFF;
 
-	if(!can.sendMessage(canHandle, &m1, 0)){
+	uint16_t transctionId;
+	if(!can.sendMessage(canHandle, &m1, &transctionId)){
 		std::cout << "Unable to send message!" << std::endl;
 	} else {
 		if(!can.getReceivedMessage(canHandle, &m2, 2000)){
