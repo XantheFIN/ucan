@@ -76,7 +76,7 @@ public:
 	}
 
 	bool getSendAcknMessage(implementation_type &impl, SharedCanMessage &aMsg, uint32_t aTimeoutMs){
-		return impl->getSendAcknMessage(aMsg, aTimeoutMs);
+		return impl->getSendAcknMessage(aMsg, 0, aTimeoutMs);
 	}
 
 	template <typename Handler>
