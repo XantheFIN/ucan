@@ -22,6 +22,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/atomic.hpp>
 
 #include "../utils/Logger.h"
 #include "../utils/LogFile.h"
@@ -100,10 +101,9 @@ private:
 
 	uint32_t mSerialBaudrate;
 
-	bool mHaltThread;
 	boost::thread mThread;
 
-	bool mIsOpen;
+	boost::atomic_bool mIsOpen;
 	CanMessageBuffer mRxBuf;
 	CanMessageBuffer mTxBuf;
 	CanMessageBuffer mTxAckBuf;
@@ -251,7 +251,7 @@ void SLCanAdapter_p::close(){
 		std::string rsp;
 		sendCommand("C", rsp);
 
-		mHaltThread = true;
+		mIsOpen = false;
 		mThread.join();
 
 		mAsyncSerial->clearCallback();
@@ -261,11 +261,8 @@ void SLCanAdapter_p::close(){
 		mRxBuf.clear();
 		mTxAckBuf.clear();
 
-		mLogFile.close();
-
-		mIsOpen = false;
-
 		mLogFile.debugStream() << "closed" << std::endl;
+		mLogFile.close();
 	}
 }
 
@@ -344,13 +341,12 @@ bool SLCanAdapter_p::open(){
 	}
 	mAsyncSerial->setCallback(boost::bind(&SLCanAdapter_p::rxCallback,this,_1,_2));
 
+	mLogFile.open();
+
 	// start receive thread
-	mHaltThread = false;
+	mIsOpen = true;
 	boost::thread t(boost::bind(&SLCanAdapter_p::receive, this));
 	mThread.swap(t);
-
-	mLogFile.open();
-	mIsOpen = true;
 
 	std::string rsp;
 
@@ -653,9 +649,8 @@ bool SLCanAdapter_p::sendCommand(std::string aCommand, std::string &aResponse){
 
 	mAsyncSerial->write(vCmd);
 
-	boost::chrono::milliseconds period(CMD_TX_TIMEOUT_MS);
-	boost::chrono::system_clock::time_point wakeUpTime = boost::chrono::system_clock::now() + period;
-	mNotifier.wait_until(lock, wakeUpTime, boost::bind(&SLCanAdapter_p::responseStatusIsKnown, this));
+	mNotifier.timed_wait(lock, boost::posix_time::milliseconds(CMD_TX_TIMEOUT_MS),
+			boost::bind(&SLCanAdapter_p::responseStatusIsKnown, this));
 
 	if(!responseStatusIsKnown()){
 		// no response!
@@ -678,7 +673,7 @@ void SLCanAdapter_p::receive(){
 
 	bool eol = false;
 	bool err = false;
-	while(!mHaltThread){
+	while(!mIsOpen){
 		if(mSerialRxBuf.pop(inc, POLL_TIMEOUT_MS)){
 			mRxTimer = 0;
 			if(inc == '\r'){
@@ -703,8 +698,10 @@ void SLCanAdapter_p::receive(){
 		}
 
 		if(err){
-			boost::mutex::scoped_lock lock(mMutex);
-			mReponseStatus = "!";
+			{
+				boost::mutex::scoped_lock lock(mMutex);
+				mReponseStatus = "!";
+			}
 			mNotifier.notify_one();
 			mInBuf.clear();
 			eol = false;
@@ -719,8 +716,10 @@ void SLCanAdapter_p::receive(){
 				}
 			} else {
 				// command response
-				boost::mutex::scoped_lock lock(mMutex);
-				mReponseStatus = strMsg;
+				{
+					boost::mutex::scoped_lock lock(mMutex);
+					mReponseStatus = strMsg;
+				}
 				mNotifier.notify_one();
 			}
 			mInBuf.clear();
