@@ -24,42 +24,49 @@ import platform
 
 Import('env')
 
-os_env = env.Clone();
+test_env = env.Clone();
 
 if ((os.name == 'posix') and (platform.system() == 'Linux' )): 
-	os_env.Append(LINKFLAGS= " -Wl,-rpath=\\$$ORIGIN") 
-	os_env.Append(LIBS=['dl'])
+	test_env.Append(LINKFLAGS= " -Wl,-rpath=\\$$ORIGIN") 
+	test_env.Append(LIBS=['dl'])
 	
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
-	os_env.Append(LINKFLAGS="-Wl,-rpath -Wl,@executable_path") 
+	test_env.Append(LINKFLAGS="-Wl,-rpath -Wl,@executable_path") 
 		
 elif((os.name == 'nt') and (platform.system() == 'Windows' )):
-	os_env['PDB'] = 'test.pdb'	
+	test_env['PDB'] = 'test.pdb'	
 		
-test = os_env.Program('TestCanDll', [
+test = test_env.Program('TestCanDll', [
 	'main.cpp',
 	]);	
 	
-can_dll = os_env.Command(os_env.SharedLibNameExt('Can'), "../"+os_env.SharedLibNameExt('Can'), Copy("$TARGET", "$SOURCE"))
-slcan_dll = os_env.Command(os_env.SharedLibNameExt('SLCan'), "../../slcan_can/"+os_env.SharedLibNameExt('SLCan'), Copy("$TARGET", "$SOURCE"))
+can_dll = test_env.Command(test_env.SharedLibNameExt('Can'), "../"+test_env.SharedLibNameExt('Can'), Copy("$TARGET", "$SOURCE"))
+slcan_dll = test_env.Command(test_env.SharedLibNameExt('SLCan'), "../../slcan_can/"+test_env.SharedLibNameExt('SLCan'), Copy("$TARGET", "$SOURCE"))
 
 if((os.name == 'nt') and (platform.system() == 'Windows' )):
-	if int(os_env['ARCH']) == 32:	
-		os_env.Requires(test, [
+	if int(test_env['ARCH']) == 32:	
+		test_env.Requires(test, [
 			can_dll, 
 			slcan_dll
 			])	
 	else:
-		os_env.Requires(test, [
+		test_env.Requires(test, [
 			can_dll, 
 			slcan_dll
 			])
 			
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
-	os_env.Requires(test, [
+	test_env.Requires(test, [
 		can_dll, 
 		slcan_dll
-		])			
+		])	
+		
+elif((os.name == 'posix') and (platform.system() == 'Linux' )):
+	socketcan_dll = test_env.Command(test_env.SharedLibNameExt('SocketCan'), "../../socketcan_can/"+test_env.SharedLibNameExt('SocketCan'), Copy("$TARGET", "$SOURCE"))
+	test_env.Requires(test, [
+		slcan_dll,
+		socketcan_dll
+	])		
 										
 objs = []
 

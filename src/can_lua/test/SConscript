@@ -60,6 +60,13 @@ elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
 		can_dll, 
 		slcan_dll
 		])
+					
+elif((os.name == 'posix') and (platform.system() == 'Linux' )):
+	socketcan_dll = test_env.Command(test_env.SharedLibNameExt('SocketCan'), "../../socketcan_can/"+test_env.SharedLibNameExt('SocketCan'), Copy("$TARGET", "$SOURCE"))
+	test_env.Requires(test, [
+		slcan_dll,
+		socketcan_dll
+	])		
 		
 lua_dll = test_env.Command(test_env.SharedLibNameExt('Lua'), '../lib/'+test_env.SharedLibNameExt('Lua'), Copy("$TARGET", "$SOURCE"))	
 module_dll = test_env.Command(test_env.SharedLibNameExt('CanLua'), '../'+test_env.SharedLibNameExt('CanLua'), Copy("$TARGET", "$SOURCE"))	
