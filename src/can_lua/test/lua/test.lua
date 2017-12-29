@@ -7,7 +7,7 @@ end
 if can_h ~= 0 then
 	h = can_h
 else	
-    type = can.SLCan
+    type = can.SocketCan
      
 	adapters = can.init_adapter_type(type)
 	
@@ -16,7 +16,7 @@ else
 		print(data)
 	end
 	
-	h = can.obtain_handle(type, "COM48")
+	h = can.obtain_handle(type, "vcan0")
 end
 
 if not can.handle_exists(h) then
@@ -37,9 +37,8 @@ if can.open(h) and can.go_bus_on(h) then
 		print("Error counter: " .. tx_err .. "," .. rx_err)
 				
 		for i=1,2 do
-			can.send_message(h, {id = 0x770, data = "023E00FFFFFFFFFF", isext = false})
-			
-			m = can.get_sent_message(h, 1000)
+			tid = can.send_message(h, {id = 0x770, data = "023E00FFFFFFFFFF", isext = false})			
+			m = can.get_send_ackn_message(h, tid, 1000)
 			if not (m == nil) then
 				print(string.format("Sent: 0x%x %s %s", m.id, m.data, tostring(m.isext)))
 			end

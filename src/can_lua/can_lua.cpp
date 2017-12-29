@@ -270,7 +270,7 @@ static int l_num_received_messages_available(lua_State *L){
 	return 1;
 }
 
-static int l_num_sent_messages_available(lua_State *L){
+static int l_num_send_ackn_messages_available(lua_State *L){
 	loadWrapper(L);
 
 	// first argument must be handle
@@ -327,20 +327,26 @@ static int l_send_message(lua_State *L){
 	}
 
 	uint16_t transactionId;
-	lua_pushboolean(L, Can->sendMessage(h, &m, &transactionId));
+	if(!Can->sendMessage(h, &m, &transactionId)){
+		lua_pushnil(L);
+	} else {
+		lua_pushnumber(L, transactionId);
+	}
 	return 1;
 }
 
-static int l_get_sent_message(lua_State *L){
+static int l_get_send_ackn_message(lua_State *L){
 	loadWrapper(L);
 
 	// first argument must be handle
 	int h = luaL_checkinteger(L, 1);
+	// transaction id
+	uint16_t tid = luaL_checkinteger(L, 2);
 	// timeout
-	uint32_t timeout = luaL_checkinteger(L, 2);
+	uint32_t timeout = luaL_checkinteger(L, 3);
 
 	CAN_CanMessage m;
-	if(!Can->getSendAcknMessage(h, &m, 0, timeout)){
+	if(!Can->getSendAcknMessage(h, &m, tid, timeout)){
 		lua_pushnil(L);
 		return 1;
 	}
@@ -416,9 +422,9 @@ static const struct luaL_Reg mylib[]={
 		{"get_state", l_get_state},
 		{"get_error_counters", l_get_error_counters},
 		{"num_received_messages_available", l_num_received_messages_available},
-		{"num_sent_messages_available", l_num_received_messages_available},
+		{"num_send_ackn_messages_available", l_num_send_ackn_messages_available},
 		{"send_message", l_send_message},
-		{"get_sent_message", l_get_sent_message},
+		{"get_send_ackn_message", l_get_send_ackn_message},
 		{"get_received_message", l_get_received_message},
 		{NULL, NULL}
 };
