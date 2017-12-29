@@ -362,6 +362,7 @@ bool SocketCanAdapter_p::write(SharedCanMessage aMsg){
 	}
 	// kick-off transmission (if not already going)
 	mIo.post(boost::bind(&SocketCanAdapter_p::doWrite, this));
+	return true;
 }
 
 bool SocketCanAdapter_p::toCanFrame(SharedCanMessage &aMsg, struct can_frame &aFrame){
