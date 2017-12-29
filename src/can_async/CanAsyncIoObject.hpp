@@ -43,8 +43,8 @@ public:
 		this->service.close(this->implementation);
 	}
 
-	bool sendMessage(const SharedCanMessage &aMsg){
-		return this->service.sendMessage(this->implementation, aMsg);
+	bool sendMessage(const SharedCanMessage &aMsg, uint16_t *transactionId){
+		return this->service.sendMessage(this->implementation, aMsg, transactionId);
 	}
 
 	bool getReceivedMessage(SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){
@@ -62,9 +62,9 @@ public:
 	}
 
 	template <typename Handler>
-	void asyncGetSendAcknMessage(Handler handler)
+	void asyncGetSendAcknMessage(uint16_t transactionId, Handler handler)
 	{
-		this->service.asyncGetSendAcknMessage(this->implementation, handler);
+		this->service.asyncGetSendAcknMessage(this->implementation, transactionId, handler);
 	}
 };
 

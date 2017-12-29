@@ -66,17 +66,16 @@ public:
 		impl->close();
 	}
 
-	bool sendMessage(implementation_type &impl, const SharedCanMessage &aMsg){
-		uint16_t transactionId;
-		return impl->sendMessage(aMsg, &transactionId);
+	bool sendMessage(implementation_type &impl, const SharedCanMessage &aMsg, uint16_t *transactionId){
+		return impl->sendMessage(aMsg, transactionId);
 	}
 
 	bool getReceivedMessage(implementation_type &impl, SharedCanMessage &aMsg, uint32_t aTimeoutMs){
 		return impl->getReceivedMessage(aMsg, aTimeoutMs);
 	}
 
-	bool getSendAcknMessage(implementation_type &impl, SharedCanMessage &aMsg, uint32_t aTimeoutMs){
-		return impl->getSendAcknMessage(aMsg, 0, aTimeoutMs);
+	bool getSendAcknMessage(implementation_type &impl, SharedCanMessage &aMsg, uint16_t transactionId, uint32_t aTimeoutMs){
+		return impl->getSendAcknMessage(aMsg, transactionId, aTimeoutMs);
 	}
 
 	template <typename Handler>
@@ -138,10 +137,12 @@ public:
 	public:
 		GetSendAcknMessageOperation(implementation_type &impl,
 				boost::asio::io_service &io_service,
+				uint16_t transactionId,
 				Handler handler)
 		: impl_(impl),
 		  io_service_(io_service),
 		  work_(io_service),
+		  transactionId_(transactionId),
 		  handler_(handler)
 		{
 		}
@@ -155,7 +156,7 @@ public:
 				{
 					boost::system::error_code ec;
 					SharedCanMessage ndu;
-					if(impl->getSendAcknMessage(ndu, 0, 100)){
+					if(impl->getSendAcknMessage(ndu, transactionId_, 100)){
 						this->io_service_.post(boost::asio::detail::bind_handler(
 								handler_, ec, ndu));
 						keepTrying = false;
@@ -175,14 +176,15 @@ public:
 		boost::weak_ptr<CanAsyncImplementation> impl_;
 		boost::asio::io_service &io_service_;
 		boost::asio::io_service::work work_;
+		uint16_t transactionId_;
 		Handler handler_;
 	};
 
 	template <typename Handler>
-	void asyncGetSendAcknMessage(implementation_type &impl, Handler handler)
+	void asyncGetSendAcknMessage(implementation_type &impl, uint16_t transactionId, Handler handler)
 	{
 		this->async_io_service_2_.post(GetSendAcknMessageOperation<Handler>(impl,
-				this->get_io_service(), handler));
+				this->get_io_service(), transactionId, handler));
 	}
 
 private:

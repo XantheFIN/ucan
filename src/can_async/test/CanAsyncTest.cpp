@@ -42,7 +42,7 @@ bool CanAsyncTest::start(SharedCanAdapter CanAdapter){
 	}
 	mIsOpen = true;
 	mCloseAfterRxReq = false;
-	mClient.asyncGetSendAcknMessage(boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
+	mClient.asyncGetSendAcknMessage(0, boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
 	mClient.asyncGetReceivedMessage(boost::bind(&CanAsyncTest::handleReceive, this, _1, _2));
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &mIo));
 	mBackgroundThread.swap(t);
@@ -60,7 +60,7 @@ bool CanAsyncTest::start(SharedCanAdapter CanAdapter){
 
 	mTimer.expires_from_now(mRxTimeout);
 	mTimer.async_wait(boost::bind(&CanAsyncTest::checkDeadline, this, _1));
-	mClient.sendMessage(mTxMsg);
+	mClient.sendMessage(mTxMsg, (uint16_t*)0);
 	return mIsOpen;
 }
 
@@ -91,7 +91,7 @@ void CanAsyncTest::handleSendEnd(const boost::system::error_code &ec, SharedCanM
 		// most likely this means that operation has been cancelled
 	} else {
 	    std::cout << "CAN msg sent: " << aMsg << " - @" << aMsg->getTimeStamp() << std::endl << std::flush;;
-	    mClient.asyncGetSendAcknMessage(boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
+	    mClient.asyncGetSendAcknMessage(0, boost::bind(&CanAsyncTest::handleSendEnd, this, _1, _2));
 	}
 }
 
@@ -118,7 +118,7 @@ void CanAsyncTest::handleReceive(const boost::system::error_code &ec, SharedCanM
 			    } else {
 					// too late - timer event handler already queued...
 			    }
-			    mClient.sendMessage(mTxMsg);
+			    mClient.sendMessage(mTxMsg, (uint16_t*)0);
 			    mClient.asyncGetReceivedMessage(boost::bind(&CanAsyncTest::handleReceive, this, _1, _2));
 			} else if (!mCloseAfterRxReq){
 				mClient.asyncGetReceivedMessage(boost::bind(&CanAsyncTest::handleReceive, this, _1, _2));
