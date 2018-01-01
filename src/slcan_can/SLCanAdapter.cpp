@@ -672,7 +672,7 @@ void SLCanAdapter_p::receive(){
 
 	bool eol = false;
 	bool err = false;
-	while(!mIsOpen){
+	while(mIsOpen){
 		if(mSerialRxBuf.pop(inc, POLL_TIMEOUT_MS)){
 			mRxTimer = 0;
 			if(inc == '\r'){
