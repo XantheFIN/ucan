@@ -2,7 +2,7 @@
  * This file is part of a CODESKIN library that is being made available
  * as open source under the GNU Lesser General Public License.
  *
- * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ * Copyright 2005-2018 by CodeSkin LLC, www.codeskin.com.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ EnsureSConsVersion(1,2)
 vars = Variables('build_options.py') 
 vars.AddVariables(
         ('ARCH', 'Architecture (32/64bit)','32'),
+        ('CROSS', 'Specify cross compilation target',''),
         ('RELEASE', 'Set to 1 to build for release', '0'),
         ('INSTALL_DIRS', 'Specify installation directories', []),    
         )

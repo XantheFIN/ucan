@@ -2,7 +2,7 @@
  * This file is part of a CODESKIN library that is being made available
  * as open source under the GNU Lesser General Public License.
  *
- * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ * Copyright 2005-2018 by CodeSkin LLC, www.codeskin.com.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 #ifndef LIB_NAME_H_
 #define  LIB_NAME_H_
 
+#define LIB_NAME_STRINGIZE(x) #x
+#define LIB_NAME_STRINGIZE_VALUE_OF(x) LIB_NAME_STRINGIZE(x)
+
 #include <string>
 
 #ifdef SCONS_TARGET_WIN
@@ -36,7 +39,11 @@
 #endif
 
 #ifdef SCONS_TARGET_LINUX
+#ifdef SCONS_TARGET_CROSS
+#define LIB_NAME(L) (std::string("libC5")+std::string(L)+std::string("_")+std::string(LIB_NAME_STRINGIZE_VALUE_OF(SCONS_TARGET_CROSS))+std::string(".so")).c_str()
+#else
 #define LIB_NAME(L) (std::string("libC5")+std::string(L)+std::string(".so")).c_str()
+#endif
 #endif
 
 #endif  //LIB_NAME_H_
