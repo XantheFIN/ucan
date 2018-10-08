@@ -110,15 +110,25 @@ if ((os.name == 'nt') and (platform.system() == 'Windows' )):
 		]
 	
 elif ((os.name == 'posix') and (platform.system() == 'Linux' )):
-    srcs = [
-    'build/utils',
-    'build/can',
-    'build/can_dll',
-    'build/can_lua',
-    'build/can_async',
-	'build/slcan_can',
-    'build/socketcan_can'
-    ]
+	if env["CROSS"].lower() == '':
+	    srcs = [
+	    'build/utils',
+	    'build/can',
+	    'build/can_dll',
+	    'build/can_lua',
+	    'build/can_async',
+		'build/slcan_can',
+	    'build/socketcan_can'
+	    ]
+	else:
+	    srcs = [
+	    'build/utils',
+	    'build/can',
+	    'build/can_dll',
+	    'build/can_async',
+		'build/slcan_can',
+	    'build/socketcan_can'
+	    ]
             
 elif ((os.name == 'posix') and (platform.system() == 'Darwin' )):
 	srcs = [
