@@ -146,7 +146,7 @@ bool SLCanAdapter::getNextChannelName(std::string &aName){
 
 bool SLCanAdapter::setParameter(std::string aKey, std::string aValue){
 	return pimpl->setParameter(aKey, aValue);
-};
+}
 
 bool SLCanAdapter::setBaudRate(uint32_t aBaudrate){
 	return pimpl->setBaudRate(aBaudrate);
