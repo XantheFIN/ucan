@@ -36,35 +36,35 @@ public:
 	}
 
 	bool open(SharedCanAdapter aCanAdapter){
-		return this->service.open(this->implementation, aCanAdapter);
+		return this->get_service().open(this->get_implementation(), aCanAdapter);
 	}
 
 	void close(){
-		this->service.close(this->implementation);
+		this->get_service().close(this->get_implementation());
 	}
 
 	bool sendMessage(const SharedCanMessage &aMsg, uint16_t *transactionId){
-		return this->service.sendMessage(this->implementation, aMsg, transactionId);
+		return this->get_service().sendMessage(this->get_implementation(), aMsg, transactionId);
 	}
 
 	bool getReceivedMessage(SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){
-		return this->service.getReceivedMessage(this->implementation, aMsg, aTimeoutMs);
+		return this->get_service().getReceivedMessage(this->get_implementation(), aMsg, aTimeoutMs);
 	}
 
 	bool getSendAcknMessage(SharedCanMessage &aMsg, uint32_t aTimeoutMs=0){
-		return this->service.getSendAcknMessage(this->implementation, aMsg, aTimeoutMs);
+		return this->get_service().getSendAcknMessage(this->get_implementation(), aMsg, aTimeoutMs);
 	}
 
 	template <typename Handler>
 	void asyncGetReceivedMessage(Handler handler)
 	{
-		this->service.asyncGetReceivedMessage(this->implementation, handler);
+		this->get_service().asyncGetReceivedMessage(this->get_implementation(), handler);
 	}
 
 	template <typename Handler>
 	void asyncGetSendAcknMessage(uint16_t transactionId, Handler handler)
 	{
-		this->service.asyncGetSendAcknMessage(this->implementation, transactionId, handler);
+		this->get_service().asyncGetSendAcknMessage(this->get_implementation(), transactionId, handler);
 	}
 };
 
