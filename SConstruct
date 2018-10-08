@@ -59,8 +59,12 @@ elif ((os.name == 'nt') and (platform.system() == 'Windows' )):
     vs_build.set_build_options(env)
     
 elif ((os.name == 'posix') and (platform.system() == 'Linux' )):
-    import linux_build
-    linux_build.set_build_options(env) 
+    if env["CROSS"].lower() == 'armhf':
+        import linux_armhf_xbuild
+        linux_armhf_xbuild.set_build_options(env) 
+    else:
+        import linux_build
+        linux_build.set_build_options(env) 
     
 else:
      raise Exception, 'Don''t know this os and platform ('+os.name+', '+platform.system()+')'
