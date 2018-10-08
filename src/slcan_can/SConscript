@@ -42,7 +42,7 @@ else:
 # dynamic library
 dll_env = env.Clone();	
 if ((os.name == 'posix') and (platform.system() == 'Linux' )): 
-	dll_env.Append(LIBS = ['boost_system','boost_thread','boost_chrono','dl','boost_filesystem'])
+	dll_env.Append(LIBS = ['boost_system','boost_thread','pthread','boost_chrono','dl','boost_filesystem'])
 	dll_env.Append(LINKFLAGS= " -Wl,-z,defs -Wl,--no-undefined ") 
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
 	dll_env.Append(LIBS = ['boost_system','boost_thread-mt','boost_chrono'])
