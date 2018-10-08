@@ -2,7 +2,7 @@
  * This file is part of a CODESKIN library that is being made available
  * as open source under the GNU Lesser General Public License.
  *
- * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ * Copyright 2005-2018 by CodeSkin LLC, www.codeskin.com.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ sfiles = [
 
 # static library
 lib_env = env.Clone();	
+lib_env.Append(CPPPATH = ['./libsocketcan']);
 if ((os.name == 'nt') and (platform.system() == 'Windows' )):
 	oobjs = []
 	for sf in sfiles:
@@ -42,13 +43,16 @@ else:
 # dynamic library
 dll_env = env.Clone();	
 if ((os.name == 'posix') and (platform.system() == 'Linux' )): 
-	dll_env.Append(LIBS = ['boost_system','boost_thread','boost_chrono','dl','pthread'])
-	dll_env.Append(LINKFLAGS= " -Wl,-z,defs -Wl,--no-undefined ") 
+	dll_env.Prepend(LIBS = ['boost_system','boost_thread','boost_chrono','dl','pthread'])
+	dll_env.Append(LINKFLAGS= " -Wl,-z,defs -Wl,--no-undefined ")
 else:
 	dll_env.Append(LIBS = [])
 
-dll_env.Prepend(LIBS = [dll_env.LibName('ucan_utils'),dll_env.LibName('can')]);
-dll_env.Prepend(LIBPATH = ['../utils', '../can']);
+dll_env.Prepend(LIBS = [dll_env.LibName('ucan_utils'),dll_env.LibName('can'),dll_env.LibName('libsocketcan')]);
+dll_env.Prepend(LIBPATH = ['../utils', '../can', 'libsocketcan']);
+dll_env.Append(CPPPATH = ['./libsocketcan']);
+
+test = SConscript(['libsocketcan/SConscript']);
 
 socketcan_dll = dll_env.SharedLibrary(dll_env.SharedLibName('SocketCan'),[
 	'SocketCanAdapterFactory.cpp',

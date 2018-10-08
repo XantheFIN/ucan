@@ -2,7 +2,7 @@
  * This file is part of a CODESKIN library that is being made available
  * as open source under the GNU Lesser General Public License.
  *
- * Copyright 2005-2017 by CodeSkin LLC, www.codeskin.com.
+ * Copyright 2005-2018 by CodeSkin LLC, www.codeskin.com.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 #include "../utils/Logger.h"
 #include "../utils/LogFile.h"
 
+#include <libsocketcan.h>
 #include "SocketCanAdapter.h"
 
 class SocketCanAdapter_p {
@@ -86,6 +87,7 @@ private:
 
 	struct can_filter mFilter[NumFilters];
 	uint32_t mBaudrate;
+	bool doIpConfig;
 
 	boost::thread mThread; // for ioservice thread
 	// only use in ioservice thread
@@ -119,7 +121,7 @@ bool SocketCanAdapter::getNextChannelName(std::string &aName){
 
 bool SocketCanAdapter::setParameter(std::string aKey, std::string aValue){
 	return pimpl->setParameter(aKey, aValue);
-};
+}
 
 bool SocketCanAdapter::setBaudRate(uint32_t aBaudrate){
 	return pimpl->setBaudRate(aBaudrate);
@@ -170,7 +172,7 @@ void SocketCanAdapter::close(){
 }
 
 SocketCanAdapter_p::SocketCanAdapter_p(std::string aChannelName, uint32_t aBaudrate):
-				mChannelName(aChannelName), mBaudrate(aBaudrate),
+				mChannelName(aChannelName), mBaudrate(aBaudrate), doIpConfig(false),
 				mThread(), mRxBuf(), mTxBuf(), mTxAckBuf(), mIsOpen(false), mWriteIsIdle(false),
 				mLogFile(), mIo(), mStream(mIo)
 {
@@ -190,15 +192,22 @@ bool SocketCanAdapter_p::setParameter(std::string aKey, std::string aValue){
 	if(aKey == "log_file"){
 		mLogFile.setFileName(aValue);
 		return true;
+	} else if(aKey == "ipconfig"){
+		doIpConfig = (aValue == "true");
+		return true;
 	} else {
 		return false;
 	}
-};
+}
 
 void SocketCanAdapter_p::close(){
 	if(mIsOpen){
 		mIo.post(boost::bind(&SocketCanAdapter_p::doClose, this));
 		mIo.reset();
+
+		if(doIpConfig){
+			can_do_stop(mChannelName.c_str()); // no error checking
+		}
 
 		mTxBuf.clear();
 		mRxBuf.clear();
@@ -210,6 +219,9 @@ void SocketCanAdapter_p::close(){
 }
 
 bool SocketCanAdapter_p::setBaudRate(uint32_t aBaudrate){
+	if(mIsOpen){
+		return false;
+	}
 	mBaudrate = aBaudrate;
 	return true;
 }
@@ -236,6 +248,25 @@ bool SocketCanAdapter_p::setAcceptanceFilter(int fid, uint32_t code, uint32_t ma
 bool SocketCanAdapter_p::open(){
 	if(mIsOpen){
 		return false;
+	}
+
+	if(doIpConfig){
+		if(can_set_restart_ms(mChannelName.c_str(), 1000) != 0){
+			mLogFile.debugStream() << "Unable to call can_set_restart_ms().";
+			return false;
+		}
+	}
+
+	if(doIpConfig){
+		if(can_set_bitrate(mChannelName.c_str(), mBaudrate) != 0){
+			mLogFile.debugStream() << "Unable to call can_set_bitrate().";
+			return false;
+		}
+
+		if(can_do_start(mChannelName.c_str()) != 0){
+			mLogFile.debugStream() << "Unable to call can_do_start().";
+			return false;
+		}
 	}
 
 	struct sockaddr_can addr;

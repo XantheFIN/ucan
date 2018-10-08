@@ -1,9 +1,3 @@
-
-Important: 
-
-SocketCanAdapter will not configure the baudrate of the interface. This must be done from the Linux
-terminal.
-
 Command cheat-sheet:
 
 See if CAN adapter has been loaded: 
