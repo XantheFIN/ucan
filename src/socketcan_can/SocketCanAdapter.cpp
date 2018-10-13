@@ -98,7 +98,7 @@ private:
 	// socket stuff
 	int mNatsock;
 	boost::asio::io_service mIo; ///< Io service object
-	boost::asio::posix::basic_stream_descriptor<> mStream;
+	boost::asio::posix::stream_descriptor mStream;
 
 	LogFile mLogFile;
 };

@@ -25,6 +25,7 @@ Top-level SCons Build File
 import os
 import sys
 import platform
+import importlib
 
 # ensure these versions of tools or newer:
 EnsurePythonVersion(2,6)
@@ -59,9 +60,9 @@ elif ((os.name == 'nt') and (platform.system() == 'Windows' )):
     vs_build.set_build_options(env)
     
 elif ((os.name == 'posix') and (platform.system() == 'Linux' )):
-    if env["CROSS"].lower() == 'armhf':
-        import linux_armhf_xbuild
-        linux_armhf_xbuild.set_build_options(env) 
+    if env["CROSS"] != '':
+        xbuild = importlib.import_module('linux_'+env["CROSS"].lower()+'_xbuild')
+        xbuild.set_build_options(env) 
     else:
         import linux_build
         linux_build.set_build_options(env) 
