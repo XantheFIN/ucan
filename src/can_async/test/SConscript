@@ -27,8 +27,9 @@ Import('env')
 test_env = env.Clone();
 
 if ((os.name == 'posix') and (platform.system() == 'Linux' )): 
-	test_env.Append(LIBS = ['boost_system','boost_thread','boost_chrono','boost_filesystem'])
+	test_env.Append(LIBS = ['boost_system','boost_thread','pthread','boost_chrono','boost_filesystem'])
 	test_env.Append(LINKFLAGS= " -Wl,-rpath=\\$$ORIGIN") 
+#	test_env.Append(LINKFLAGS= " -Wl,--dynamic-linker=/lib/ld-linux.so.3") 
 	test_env.Append(LIBS=['dl']);
 	
 elif((os.name == 'posix') and (platform.system() == 'Darwin' )):
