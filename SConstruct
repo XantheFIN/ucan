@@ -34,7 +34,7 @@ EnsureSConsVersion(1,2)
 # get build options
 vars = Variables('build_options.py') 
 vars.AddVariables(
-        ('ARCH', 'Architecture (32/64bit)','32'),
+        ('ARCH', 'Architecture (32/64bit)','64'),
         ('CROSS', 'Specify cross compilation target',''),
         ('RELEASE', 'Set to 1 to build for release', '0'),
         ('INSTALL_DIRS', 'Specify installation directories', []),    
@@ -88,6 +88,7 @@ VariantDir('build/can_async', 'src/can_async', 0)
 VariantDir('build/can_lua', 'src/can_lua', 0)
 VariantDir('build/slcan_can', 'src/slcan_can', 0)
 VariantDir('build/socketcan_can', 'src/socketcan_can', 0)
+VariantDir('build/kvaser_can', 'src/kvaser_can', 0)
 
 # subdirectories needing to be built 
 if ((os.name == 'nt') and (platform.system() == 'Windows' )):
@@ -99,6 +100,7 @@ if ((os.name == 'nt') and (platform.system() == 'Windows' )):
 		'build/can_lua',
 		'build/can_async',
 		'build/slcan_can',
+		'build/kvaser_can'
 		]
 	else:
 		srcs = [
@@ -108,6 +110,7 @@ if ((os.name == 'nt') and (platform.system() == 'Windows' )):
 		'build/can_lua',
 		'build/can_async',
 		'build/slcan_can',
+		'build/kvaser_can'
 		]
 	
 elif ((os.name == 'posix') and (platform.system() == 'Linux' )):

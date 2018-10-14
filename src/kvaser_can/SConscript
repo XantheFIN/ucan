@@ -1,0 +1,72 @@
+"""
+ * This file is part of a CODESKIN library that is being made available
+ * as open source under the GNU Lesser General Public License.
+ *
+ * Copyright 2005-2018 by CodeSkin LLC, www.codeskin.com.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import platform
+
+Import('env')
+
+sfiles = [
+	'KvaserCanAdapter.cpp'
+	]
+
+# static library
+lib_env = env.Clone();
+if ((os.name == 'nt') and (platform.system() == 'Windows' )):
+	lib_env.Append(CPPPATH = ['win/include']);	
+	oobjs = []
+	for sf in sfiles:
+		o = lib_env.Object('s_'+sf.split('.cpp')[0], sf);
+		oobjs.append(o);
+	kvaser_can = lib_env.Library(lib_env.LibName('kvaser_can'), oobjs);	
+else:
+	kvaser_can = lib_env.Library(lib_env.LibName('kvaser_can'), sfiles);		
+
+# dynamic library
+dll_env = env.Clone();
+if((os.name == 'nt') and (platform.system() == 'Windows' )):
+	dll_env.Append(CPPPATH = ['win/include']);
+	if int(dll_env['ARCH']) == 32:
+		dll_env.Append(LIBS = ['canlib32']);
+		dll_env.Append(LIBPATH = ['./win/x86/']);
+	else:
+		dll_env.Append(LIBS = ['canlib32']);
+		dll_env.Append(LIBPATH = ['./win/x86-64/']);
+
+dll_env.Prepend(LIBS = [dll_env.LibName('can'),dll_env.LibName('ucan_utils')]);
+dll_env.Prepend(LIBPATH = ['../can','../utils']);	
+
+kvasercan_dll = dll_env.SharedLibrary(dll_env.SharedLibName('KvaserCan'),
+						[
+						'KvaserCanAdapterFactory.cpp',
+						sfiles
+						 ]);
+
+if int(dll_env['RELEASE']) == 1:
+	for dir in dll_env['INSTALL_DIRS']:
+		Default(dll_env.Install('%s/dll' % dir, kvasercan_dll))
+		
+test = SConscript(['test/SConscript']);
+
+objs = []
+objs.append(kvaser_can)
+objs.append(test)
+
+Return('objs');
