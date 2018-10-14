@@ -11,18 +11,18 @@ def set_build_options(env):
 	env['CC'] = xc_prefix + 'gcc'
 	env['CXX'] = xc_prefix + 'gcc'
 	env['AR'] = xc_prefix + 'ar'
-	env['RANLIB'] = 'xc_prefix + 'ranlib'
+	env['RANLIB'] = xc_prefix + 'ranlib'
 	
 	home = os.path.expanduser("~")
 	env['XGCC_PATH'] = home+'/opt/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf'
 	env['XSYS_ROOT'] = home+'/opt/sysroot-glibc-linaro-2.23-2018.05-arm-linux-gnueabihf'
 
 	inc_search_path = [
-		home+'/lib/armhf/boost_1_53_0/include'
+		home+'/opt/armhf/boost_1_68/include'
 	]
 	
 	lib_search_path = [
-		home+'/lib/armhf/boost_1_53_0/lib'
+		home+'/opt/armhf/boost_1_68/lib'
 	]
 
     #augment search path
@@ -35,7 +35,7 @@ def set_build_options(env):
 	env.Append(LIBPATH = lib_search_path)  
 		        
 	#-pedantic-errors	        
-	env.Append(CXXFLAGS = ['-g','-std=c++11'])	
+	env.Append(CXXFLAGS = ['-g','-Wno-psabi'])	
 	env.Append(CFLAGS = ['-g'])
 	
 	env.Append(LINKFLAGS= ['-lstdc++','-shared-libgcc']) 
