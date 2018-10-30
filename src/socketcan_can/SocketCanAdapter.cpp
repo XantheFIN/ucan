@@ -183,8 +183,10 @@ SocketCanAdapter_p::SocketCanAdapter_p(std::string aChannelName, uint32_t aBaudr
 }
 
 SocketCanAdapter_p::~SocketCanAdapter_p(){
-	if(mIsOpen){
+	try {
 		close();
+	} catch (...){
+		;
 	}
 }
 
@@ -203,6 +205,7 @@ bool SocketCanAdapter_p::setParameter(std::string aKey, std::string aValue){
 void SocketCanAdapter_p::close(){
 	if(mIsOpen){
 		mIo.post(boost::bind(&SocketCanAdapter_p::doClose, this));
+		mThread.join();
 		mIo.reset();
 
 		if(doIpConfig){
