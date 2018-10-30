@@ -38,7 +38,10 @@ def sharedlib_name(env, libname):
 	if((os.name == 'posix') and (platform.system() == 'Darwin' )):
 		return "libC5"+libname
 	elif((os.name == 'posix') and (platform.system() == 'Linux' )):
-		return "libC5"+libname
+		if env["CROSS"].lower() == '':
+			return "libC5"+libname
+		else:
+			return "libC5"+libname+"_"+env["CROSS"].lower()
 	elif ((os.name == 'nt') and (platform.system() == 'Windows' )):
 		if int(env['ARCH']) == 32:
 			return "C5"+libname+"-md_32"
