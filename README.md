@@ -14,6 +14,7 @@ It is therefore the objective of this open-source project to provide an universa
 uCAN currently supports the following hardware:
 * Windows:
   * SL CAN compatible devices (such as [Lawicel](http://www.can232.com) and [Tiny-CAN](http://www.mhs-elektronik.de/))
+  * [Kvaser](https://www.kvaser.com) CAN interfaces
 * macOS:
   * SL CAN
 * Linux:
